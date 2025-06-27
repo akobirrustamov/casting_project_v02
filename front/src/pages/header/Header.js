@@ -1,27 +1,55 @@
 import React, { useState, useEffect } from 'react';
-import {Link, useParams} from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import logo from "./logo.jpg";
 import './header.css';
 
-function Header({ props }) {
+function Header({ activeTab }) {
     const { userId } = useParams();
-
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
     const [language, setLanguage] = useState('uz');
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
     useEffect(() => {
-        // Get language from localStorage or default to Uzbek
         const savedLanguage = localStorage.getItem('selectedLanguage') || 'uz';
         setLanguage(savedLanguage);
+
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 10);
+        };
+
+        const handleResize = () => {
+            const mobile = window.innerWidth < 768;
+            setIsMobile(mobile);
+            if (!mobile) {
+                setIsMenuOpen(false);
+                document.body.style.overflow = 'auto';
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('resize', handleResize);
+        };
     }, []);
 
     const toggleMenu = () => {
-        setIsMenuOpen(!isMenuOpen);
+        const newState = !isMenuOpen;
+        setIsMenuOpen(newState);
+        document.body.style.overflow = newState ? 'hidden' : 'auto';
+    };
+
+    const closeMenu = () => {
+        setIsMenuOpen(false);
+        document.body.style.overflow = 'auto';
     };
 
     const changeLanguage = (lang) => {
         setLanguage(lang);
         localStorage.setItem('selectedLanguage', lang);
-        window.location.reload(); // Refresh to apply language changes
+        window.location.reload();
     };
 
     const translations = {
@@ -44,58 +72,123 @@ function Header({ props }) {
     };
 
     return (
-        <header className="header-container">
-            <div className="header-content">
-                <Link  to={`/${userId}`} className="logo" onClick={() => setIsMenuOpen(false)}>
-                    <span className="logo-text">{translations[language].home}</span>
-                </Link>
+        <>
+            <header className={`header-container ${scrolled ? 'scrolled' : ''}`}>
+                <div className="header-content">
+                    <Link to={`/${userId}`} className="logo" onClick={closeMenu}>
+                        <img src={logo} alt="Logo" className="logo-image" />
+                    </Link>
 
-                <div className="language-selector">
-                    <select
-                        value={language}
-                        onChange={(e) => changeLanguage(e.target.value)}
-                        className="language-dropdown"
-                    >
-                        <option value="uz">{translations[language].uzbek}</option>
-                        <option value="ru">{translations[language].russian}</option>
-                    </select>
+                    <div className="header-right">
+
+
+                        {isMobile && (
+                            <div className='for_flex'>
+                                <div className="language-selector">
+                                    <select
+                                        value={language}
+                                        onChange={(e) => changeLanguage(e.target.value)}
+                                        className="language-dropdown"
+                                        aria-label={translations[language].language}
+                                    >
+                                        <option value="uz">{translations[language].uzbek}</option>
+                                        <option value="ru">{translations[language].russian}</option>
+                                    </select>
+                                </div>
+                                <button
+                                    className={`menu-toggle ${isMenuOpen ? 'open' : ''}`}
+                                    onClick={toggleMenu}
+                                    aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+                                >
+                                    <span className="menu-line"></span>
+                                    <span className="menu-line"></span>
+                                    <span className="menu-line"></span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {!isMobile && (
+                        <nav className="desktop-navigation">
+                            <ul className="nav-list">
+                                <li className="nav-item">
+                                    <Link
+                                        to={`/${userId}`}
+                                        className={`nav-link ${activeTab === '' ? 'active' : ''}`}
+                                    >
+                                        {translations[language].home}
+                                        <span className="link-underline"></span>
+                                    </Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link
+                                        to={`/data-form/${userId}`}
+                                        className={`nav-link ${activeTab === 'data-form' ? 'active' : ''}`}
+                                    >
+                                        {translations[language].casting}
+                                        <span className="link-underline"></span>
+                                    </Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link
+                                        to={`/history/${userId}`}
+                                        className={`nav-link ${activeTab === 'history' ? 'active' : ''}`}
+                                    >
+                                        {translations[language].my}
+                                        <span className="link-underline"></span>
+                                    </Link>
+                                </li>
+                            </ul>
+                            <div className="language-selector">
+                                <select
+                                    value={language}
+                                    onChange={(e) => changeLanguage(e.target.value)}
+                                    className="language-dropdown"
+                                    aria-label={translations[language].language}
+                                >
+                                    <option value="uz">{translations[language].uzbek}</option>
+                                    <option value="ru">{translations[language].russian}</option>
+                                </select>
+                            </div>
+                        </nav>
+                    )}
                 </div>
+            </header>
 
-                <button className="menu-toggle" onClick={toggleMenu}>
-                    {isMenuOpen ? '✕' : '☰'}
-                </button>
-
-                <nav className={`navigation ${isMenuOpen ? 'active' : ''}`}>
-                    <ul className="nav-list">
-                        <li className="nav-item" onClick={() => setIsMenuOpen(false)}>
-                            <Link
-                                to={`/${userId}`}
-                                className={`nav-link text-white ${props === '' ? 'active' : ''}`}
-                            >
-                                {translations[language].home}
-                            </Link>
-                        </li>
-
-                        <li className="nav-item" onClick={() => setIsMenuOpen(false)}>
-                            <Link
-                                to={`/data-form/${userId}`}
-                                className={`nav-link text-white ${props === 'data-form' ? 'active' : ''}`}
-                            >
-                                {translations[language].casting}
-                            </Link>
-                        </li>
-                        <li className="nav-item" onClick={() => setIsMenuOpen(false)}>
-                            <Link
-                                to={`/history/${userId}`}
-                                className={`nav-link text-white ${props === 'history' ? 'active' : ''}`}
-                            >
-                                {translations[language].my}
-                            </Link>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-        </header>
+            {/* Mobile Navigation Overlay */}
+            {isMobile && (
+                <div className={`mobile-nav-overlay ${isMenuOpen ? 'active' : ''}`}>
+                    <nav className="mobile-navigation">
+                        <ul className="mobile-nav-list">
+                            <li className="nav-item" onClick={closeMenu}>
+                                <Link
+                                    to={`/${userId}`}
+                                    className={`nav-link ${activeTab === '' ? 'active' : ''}`}
+                                >
+                                    {translations[language].home}
+                                </Link>
+                            </li>
+                            <li className="nav-item" onClick={closeMenu}>
+                                <Link
+                                    to={`/data-form/${userId}`}
+                                    className={`nav-link ${activeTab === 'data-form' ? 'active' : ''}`}
+                                >
+                                    {translations[language].casting}
+                                </Link>
+                            </li>
+                            <li className="nav-item" onClick={closeMenu}>
+                                <Link
+                                    to={`/history/${userId}`}
+                                    className={`nav-link ${activeTab === 'history' ? 'active' : ''}`}
+                                >
+                                    {translations[language].my}
+                                </Link>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            )}
+        </>
     );
 }
 

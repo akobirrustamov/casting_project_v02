@@ -3,22 +3,30 @@ import Header from "../header/Header";
 import "react-responsive-modal/styles.css";
 import ApiCall, { baseUrl } from '../../config/index';
 import './home.css';
-import {useParams} from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 function Home(props) {
     const { userId } = useParams();
-
     const [newsList, setNewsList] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [language, setLanguage] = useState('uz');
+    const [visibleItems, setVisibleItems] = useState(4);
+    const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
-        // Get language from localStorage
         const savedLanguage = localStorage.getItem('selectedLanguage') || 'uz';
         setLanguage(savedLanguage);
+        checkMobile();
         fetchNews();
+
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
     }, []);
+
+    const checkMobile = () => {
+        setIsMobile(window.innerWidth < 768);
+    };
 
     const fetchNews = async () => {
         setLoading(true);
@@ -38,29 +46,32 @@ function Home(props) {
     };
 
     const formatDate = (dateString) => {
-        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        const options = { year: 'numeric', month: 'short', day: 'numeric' };
         return new Date(dateString).toLocaleDateString(undefined, options);
     };
 
-    // Translations for UI elements
+    const loadMore = () => {
+        setVisibleItems(prev => prev + 4);
+    };
+
     const translations = {
         uz: {
             loading: "Yuklanmoqda...",
             error: "Yangiliklar yuklanmadi",
-            gallery: "Galereya"
+            gallery: "Galereya",
+            loadMore: "Ko'proq ko'rish"
         },
         ru: {
             loading: "Загрузка...",
             error: "Новости не загружены",
-            gallery: "Галерея"
+            gallery: "Галерея",
+            loadMore: "Показать больше"
         }
     };
 
     return (
         <div className="home-container">
             <Header props={""} />
-            <div className="header-spacer"></div>
-
             <main className="news-main">
                 {loading ? (
                     <div className="loading-container">
@@ -72,67 +83,76 @@ function Home(props) {
                         {translations[language].error}: {error}
                     </div>
                 ) : (
-                    <div className="news-grid">
-                        {newsList.map((news) => (
-                            <article key={news.id} className="news-card">
-                                {/* Main Image */}
-                                {news.mainPhoto && (
-                                    <div className="news-main-image">
-                                        <img
-                                            src={`${baseUrl}/api/v1/file/getFile/${news.mainPhoto.id}`}
-                                            alt={language === 'uz' ? news.titleUz : news.titleRu}
-                                            className="news-image"
-                                        />
-                                    </div>
-                                )}
-
-                                <div className="news-content">
-                                    <div className="news-meta">
-                                        <span className="news-date">{formatDate(news.createdAt)}</span>
-                                    </div>
-
-                                    <h2 className="news-title">
-                                        {language === 'uz' ? news.titleUz : news.titleRu}
-                                    </h2>
-
-                                    <div className="news-description">
-                                        <p>{language === 'uz' ? news.descriptionUz : news.descriptionRu}</p>
-                                    </div>
-
-                                    {/* YouTube Embed */}
-                                    {news.link && (
-                                        <div className="news-video">
-                                            <div className="video-container">
-                                                <div
-                                                    dangerouslySetInnerHTML={{
-                                                        __html: news.link
-                                                    }}
-                                                />
-                                            </div>
+                    <>
+                        <div className="news-grid">
+                            {newsList.slice(0, visibleItems).map((news) => (
+                                <article key={news.id} className="news-card">
+                                    {news.mainPhoto && (
+                                        <div className="news-main-image">
+                                            <img
+                                                src={`${baseUrl}/api/v1/file/getFile/${news.mainPhoto.id}`}
+                                                alt={language === 'uz' ? news.titleUz : news.titleRu}
+                                                className="news-image"
+                                                loading="lazy"
+                                            />
                                         </div>
                                     )}
 
-                                    {/* Additional Images */}
-                                    {news.photos && news.photos.length > 0 && (
-                                        <div className="news-gallery">
-                                            <h4 className="gallery-title">{translations[language].gallery}</h4>
-                                            <div className="gallery-grid">
-                                                {news.photos.map((photo) => (
-                                                    <div key={photo.id} className="gallery-item">
-                                                        <img
-                                                            src={`${baseUrl}/api/v1/file/getFile/${photo.id}`}
-                                                            alt={translations[language].gallery}
-                                                            className="gallery-image"
-                                                        />
-                                                    </div>
-                                                ))}
-                                            </div>
+                                    <div className="news-content">
+                                        <div className="news-meta">
+                                            <span className="news-date">{formatDate(news.createdAt)}</span>
                                         </div>
-                                    )}
-                                </div>
-                            </article>
-                        ))}
-                    </div>
+
+                                        <h2 className="news-title">
+                                            {language === 'uz' ? news.titleUz : news.titleRu}
+                                        </h2>
+
+                                        <div className="news-description">
+                                            <p>{language === 'uz' ? news.descriptionUz : news.descriptionRu}</p>
+                                        </div>
+
+                                        {news.link && (
+                                            <div className="news-video">
+                                                <div className="video-container">
+                                                    <div
+                                                        dangerouslySetInnerHTML={{
+                                                            __html: news.link
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {news.photos && news.photos.length > 0 && (
+                                            <div className="news-gallery">
+                                                <h4 className="gallery-title">{translations[language].gallery}</h4>
+                                                <div className="gallery-grid">
+                                                    {news.photos.map((photo) => (
+                                                        <div key={photo.id} className="gallery-item">
+                                                            <img
+                                                                src={`${baseUrl}/api/v1/file/getFile/${photo.id}`}
+                                                                alt={translations[language].gallery}
+                                                                className="gallery-image"
+                                                                loading="lazy"
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
+
+                        {visibleItems < newsList.length && (
+                            <div className="load-more-container">
+                                <button onClick={loadMore} className="load-more-btn">
+                                    {translations[language].loadMore}
+                                </button>
+                            </div>
+                        )}
+                    </>
                 )}
             </main>
         </div>

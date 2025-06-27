@@ -1,6 +1,6 @@
-import React, {useEffect} from "react";
+import React, { useEffect } from "react";
 import './App.css';
-import {Route, Routes, useLocation, useNavigate} from "react-router-dom";
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import ApiCall from "./config/index"
 
 // my pages
@@ -22,20 +22,20 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect( () => {
+  useEffect(() => {
 
     checkSecurity()
   }, [blockedPages, location.pathname, navigate])
-  async function checkSecurity(){
+  async function checkSecurity() {
     if (blockedPages.some((blockedPage) => location.pathname.startsWith(blockedPage))) {
       let accessToken = localStorage.getItem("access_token");
       const res = await ApiCall("/api/v1/security", "GET")
-      if(res?.data==401){
+      if (res?.data == 401) {
         navigate("/admin/login");
       }
-      if (accessToken !== null ) {
-        if (res?.data!==401&&res?.error){
-          if (res?.data[0]?.name!=="ROLE_ADMIN"){
+      if (accessToken !== null) {
+        if (res?.data !== 401 && res?.error) {
+          if (res?.data[0]?.name !== "ROLE_ADMIN") {
             navigate("/404")
           }
         }
@@ -49,21 +49,21 @@ function App() {
     <div>
       <Routes>
         {/*  app admin */}
-        <Route path={"/admin"} element={<AdminHome/>}/>
-        <Route path={"/admin/news"} element={<AdminNews/>}/>
-        <Route path={"/admin/casting-users"} element={<AdminHome/>}/>
-        <Route path={"/admin/casting-users/:userId"} element={<AdminHome/>}/>
-        <Route path={"/*"} element={<PageNotFound/>}/>
+        <Route path={"/admin"} element={<AdminHome />} />
+        <Route path={"/admin/news"} element={<AdminNews />} />
+        <Route path={"/admin/casting-users"} element={<AdminHome />} />
+        <Route path={"/admin/casting-users/:userId"} element={<AdminHome />} />
+        <Route path={"/*"} element={<PageNotFound />} />
 
 
 
 
-      {/*  app user */}
-        <Route path={"/:userId"} element={<Home/>}/>
-        <Route path={"/"} element={<Home/>}/>
-        <Route path={"/data-form/:userId"} element={<DataForm/>}/>
-        <Route path={"/history/:userId"} element={<History/>}/>
-        <Route path={"/appeal/:appealId"} element={<Appeal/>}/>
+        {/*  app user */}
+        <Route path={"/:userId"} element={<Home />} />
+        <Route path={"/"} element={<Home />} />
+        <Route path={"/data-form/:userId"} element={<DataForm />} />
+        <Route path={"/history/:userId"} element={<History />} />
+        <Route path={"/appeal/:appealId"} element={<Appeal />} />
 
 
 
