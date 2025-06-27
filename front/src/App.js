@@ -11,6 +11,8 @@ import AdminNews from "./admin/admin/AdminNews";
 import DataForm from "./pages/dataForm/DataForm";
 import History from "./pages/history/History";
 import Appeal from "./pages/appeal/Appeal";
+import CastingUser from "./admin/admin/CastingUser";
+import CastingUserDetail from "./admin/admin/CastingUserDetail";
 
 
 
@@ -51,8 +53,8 @@ function App() {
         {/*  app admin */}
         <Route path={"/admin"} element={<AdminHome/>}/>
         <Route path={"/admin/news"} element={<AdminNews/>}/>
-        <Route path={"/admin/casting-users"} element={<AdminHome/>}/>
-        <Route path={"/admin/casting-users/:userId"} element={<AdminHome/>}/>
+        <Route path={"/admin/casting-users"} element={<CastingUser/>}/>
+        <Route path={"/admin/casting-users/:castingUserId"} element={<CastingUserDetail/>}/>
         <Route path={"/*"} element={<PageNotFound/>}/>
 
 
