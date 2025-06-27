@@ -51,11 +51,11 @@ function App() {
     <div>
       <Routes>
         {/*  app admin */}
-        <Route path={"/admin"} element={<AdminHome/>}/>
-        <Route path={"/admin/news"} element={<AdminNews/>}/>
-        <Route path={"/admin/casting-users"} element={<CastingUser/>}/>
-        <Route path={"/admin/casting-users/:castingUserId"} element={<CastingUserDetail/>}/>
-        <Route path={"/*"} element={<PageNotFound/>}/>
+        <Route path={"/admin"} element={<AdminHome />} />
+        <Route path={"/admin/news"} element={<AdminNews />} />
+        <Route path={"/admin/casting-users"} element={<CastingUser />} />
+        <Route path={"/admin/casting-users/:castingUserId"} element={<CastingUserDetail />} />
+        <Route path={"/*"} element={<PageNotFound />} />
 
 
 

@@ -3,21 +3,24 @@ import Header from "../header/Header";
 import "react-responsive-modal/styles.css";
 import ApiCall, { baseUrl } from '../../config/index';
 import './Appeal.css';
-import {useParams, useNavigate, useLocation} from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Modal } from "react-responsive-modal";
+import { FiArrowLeft, FiMail, FiPhone, FiInstagram, FiFacebook, FiX } from 'react-icons/fi';
+import { FaTelegramPlane } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 
 function Appeal(props) {
     const { userId } = useParams();
     const location = useLocation();
     const castingId = location.state?.castingId;
     const navigate = useNavigate();
-
     const [casting, setCasting] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [language, setLanguage] = useState('uz');
     const [selectedImage, setSelectedImage] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState('basic');
 
     const openImageModal = (imageUrl) => {
         setSelectedImage(imageUrl);
@@ -38,7 +41,7 @@ function Appeal(props) {
     const fetchCasting = async () => {
         setLoading(true);
         try {
-            const response = await ApiCall('/api/v1/casting-user/appeal/'+castingId, 'GET');
+            const response = await ApiCall('/api/v1/casting-user/appeal/' + castingId, 'GET');
             if (response.error) {
                 setError(response.data);
             } else {
@@ -113,7 +116,8 @@ function Appeal(props) {
             instagram: "Instagram",
             price: "Narx ($)",
             createdAt: "Ariza sanasi",
-            status: "Holat"
+            status: "Holat",
+            viewFullImage: "To'liq rasmini ko'rish"
         },
         ru: {
             loading: "Загрузка...",
@@ -145,15 +149,138 @@ function Appeal(props) {
             instagram: "Instagram",
             price: "Цена ($)",
             createdAt: "Дата заявки",
-            status: "Статус"
+            status: "Статус",
+            viewFullImage: "Посмотреть полное изображение"
+        }
+    };
+
+    const renderTabContent = () => {
+        switch (activeTab) {
+            case 'basic':
+                return (
+                    <div className="info-grid">
+                        {[
+                            { label: translations[language].name, value: casting.name },
+                            { label: translations[language].castingType, value: casting.castingType },
+                            { label: translations[language].gender, value: casting.gender },
+                            { label: translations[language].region, value: casting.region },
+                            { label: translations[language].nationality, value: casting.nationality },
+                            { label: translations[language].birthday, value: formatDate(casting.birthday) },
+                        ].map((item, index) => (
+                            <div key={index} className="info-item">
+                                <span className="info-label">{item.label}</span>
+                                <span className="info-value">{item.value}</span>
+                            </div>
+                        ))}
+                    </div>
+                );
+            case 'physical':
+                return (
+                    <div className="info-grid">
+                        {[
+                            { label: translations[language].age, value: casting.age },
+                            { label: translations[language].height, value: casting.height },
+                            { label: translations[language].hairColor, value: casting.hairColor },
+                            { label: translations[language].eyeColor, value: casting.eyeColor },
+                            { label: translations[language].clothSize, value: casting.clothSize },
+                            { label: translations[language].shoeSize, value: casting.shoeSize },
+                            { label: translations[language].bust, value: casting.bust },
+                            { label: translations[language].waist, value: casting.waist },
+                            { label: translations[language].son, value: casting.son },
+                        ].map((item, index) => (
+                            <div key={index} className="info-item">
+                                <span className="info-label">{item.label}</span>
+                                <span className="info-value">{item.value}</span>
+                            </div>
+                        ))}
+                    </div>
+                );
+            case 'contact':
+                return (
+                    <div className="info-grid">
+                        <div className="info-item">
+                            <span className="info-label">{translations[language].email}</span>
+                            <span className="info-value">
+                                <a href={`mailto:${casting.email}`} className="contact-link">
+                                    <FiMail className="contact-icon" /> {casting.email}
+                                </a>
+                            </span>
+                        </div>
+                        <div className="info-item">
+                            <span className="info-label">{translations[language].phone}</span>
+                            <span className="info-value">
+                                <a href={`tel:${casting.phone}`} className="contact-link">
+                                    <FiPhone className="contact-icon" /> {casting.phone}
+                                </a>
+                            </span>
+                        </div>
+                        {casting.telegram && (
+                            <div className="info-item">
+                                <span className="info-label">{translations[language].telegram}</span>
+                                <span className="info-value">
+                                    <a href={`https://t.me/${casting.telegram}`} target="_blank" rel="noopener noreferrer" className="contact-link">
+                                        <FaTelegramPlane className="contact-icon" /> {casting.telegram}
+                                    </a>
+                                </span>
+                            </div>
+                        )}
+                        {casting.facebook && (
+                            <div className="info-item">
+                                <span className="info-label">{translations[language].facebook}</span>
+                                <span className="info-value">
+                                    <a href={casting.facebook} target="_blank" rel="noopener noreferrer" className="contact-link">
+                                        <FiFacebook className="contact-icon" /> {casting.facebook}
+                                    </a>
+                                </span>
+                            </div>
+                        )}
+                        {casting.instagram && (
+                            <div className="info-item">
+                                <span className="info-label">{translations[language].instagram}</span>
+                                <span className="info-value">
+                                    <a href={`https://instagram.com/${casting.instagram}`} target="_blank" rel="noopener noreferrer" className="contact-link">
+                                        <FiInstagram className="contact-icon" /> {casting.instagram}
+                                    </a>
+                                </span>
+                            </div>
+                        )}
+                        <div className="info-item">
+                            <span className="info-label">{translations[language].price}</span>
+                            <span className="info-value">{casting.price} $</span>
+                        </div>
+                    </div>
+                );
+            case 'gallery':
+                return (
+                    <div className="gallery-grid">
+                        {casting.photos.map((photo, index) => (
+                            <motion.div
+                                key={index}
+                                className="gallery-item"
+                                whileHover={{ scale: 1.03 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                <img
+                                    src={`${baseUrl}/api/v1/file/getFile/${photo.id}`}
+                                    alt={`Gallery ${index + 1}`}
+                                    onClick={() => openImageModal(`${baseUrl}/api/v1/file/getFile/${photo.id}`)}
+                                    loading="lazy"
+                                />
+                                <div className="gallery-overlay">
+                                    <span>{translations[language].viewFullImage}</span>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                );
+            default:
+                return null;
         }
     };
 
     return (
         <div className="appeal-container">
             <Header props={""} />
-            <div className="header-spacer"></div>
-
             <main className="appeal-main">
                 {loading ? (
                     <div className="loading-container">
@@ -174,177 +301,91 @@ function Appeal(props) {
                             className="back-button"
                             onClick={() => navigate(-1)}
                         >
-                            {translations[language].back}
+                            <FiArrowLeft /> {translations[language].back}
                         </button>
 
                         <div className="appeal-card">
-                            {/* Main photo */}
-                            {/*{casting.photos && casting.photos.length > 0 && (*/}
-                            {/*    <div className="main-photo">*/}
-                            {/*        <img*/}
-                            {/*            src={`${baseUrl}/api/v1/file/getFile/${casting.photos[0].id}`}*/}
-                            {/*            alt={casting.name}*/}
-                            {/*        />*/}
-                            {/*    </div>*/}
-                            {/*)}*/}
-
-                            <div className="appeal-sections">
-                                {/* Basic Information */}
-                                <div className="appeal-section">
-                                    <h2>{translations[language].basicInfo}</h2>
-                                    <div className="info-grid">
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].name}</span>
-                                            <span className="info-value">{casting.name}</span>
-                                        </div>
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].castingType}</span>
-                                            <span className="info-value">{casting.castingType}</span>
-                                        </div>
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].gender}</span>
-                                            <span className="info-value">{casting.gender}</span>
-                                        </div>
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].region}</span>
-                                            <span className="info-value">{casting.region}</span>
-                                        </div>
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].nationality}</span>
-                                            <span className="info-value">{casting.nationality}</span>
-                                        </div>
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].birthday}</span>
-                                            <span className="info-value">{formatDate(casting.birthday)}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Physical Information */}
-                                <div className="appeal-section">
-                                    <h2>{translations[language].physicalInfo}</h2>
-                                    <div className="info-grid">
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].age}</span>
-                                            <span className="info-value">{casting.age}</span>
-                                        </div>
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].height}</span>
-                                            <span className="info-value">{casting.height}</span>
-                                        </div>
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].hairColor}</span>
-                                            <span className="info-value">{casting.hairColor}</span>
-                                        </div>
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].eyeColor}</span>
-                                            <span className="info-value">{casting.eyeColor}</span>
-                                        </div>
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].clothSize}</span>
-                                            <span className="info-value">{casting.clothSize}</span>
-                                        </div>
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].shoeSize}</span>
-                                            <span className="info-value">{casting.shoeSize}</span>
-                                        </div>
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].bust}</span>
-                                            <span className="info-value">{casting.bust}</span>
-                                        </div>
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].waist}</span>
-                                            <span className="info-value">{casting.waist}</span>
-                                        </div>
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].son}</span>
-                                            <span className="info-value">{casting.son}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Contact Information */}
-                                <div className="appeal-section">
-                                    <h2>{translations[language].contactInfo}</h2>
-                                    <div className="info-grid">
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].email}</span>
-                                            <span className="info-value">{casting.email}</span>
-                                        </div>
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].phone}</span>
-                                            <span className="info-value">{casting.phone}</span>
-                                        </div>
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].telegram}</span>
-                                            <span className="info-value">{casting.telegram}</span>
-                                        </div>
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].facebook}</span>
-                                            <span className="info-value">{casting.facebook}</span>
-                                        </div>
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].instagram}</span>
-                                            <span className="info-value">{casting.instagram}</span>
-                                        </div>
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].price}</span>
-                                            <span className="info-value">{casting.price}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Status and Date */}
-                                <div className="appeal-section">
-                                    <div className="info-grid">
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].status}</span>
-                                            <span className={`info-value status-badge ${getStatusClass(casting.status)}`}>
-                                                {getStatusText(casting.status)}
-                                            </span>
-                                        </div>
-                                        <div className="info-item">
-                                            <span className="info-label">{translations[language].createdAt}</span>
-                                            <span className="info-value">{formatDate(casting.createdAt)}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Gallery */}
+                            {/* Profile Header */}
+                            <div className="profile-header">
                                 {casting.photos && casting.photos.length > 0 && (
-                                    <div className="appeal-section">
-                                        <h2>{translations[language].gallery}</h2>
-                                        <div className="gallery-grid">
-                                            {casting.photos.map((photo, index) => (
-                                                <div key={index} className="gallery-item">
-                                                    <img
-                                                        src={`${baseUrl}/api/v1/file/getFile/${photo.id}`}
-                                                        alt={`Gallery ${index + 1}`}
-                                                        onClick={() => openImageModal(`${baseUrl}/api/v1/file/getFile/${photo.id}`)}
-                                                        style={{ cursor: 'pointer' }}
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
+                                    <div className="profile-avatar">
+                                        <img
+                                            src={`${baseUrl}/api/v1/file/getFile/${casting.photos[0].id}`}
+                                            alt={casting.name}
+                                        />
                                     </div>
                                 )}
+                                <div className="profile-info">
+                                    <h1>{casting.name}</h1>
+                                    <div className="profile-meta">
+                                        <span className="casting-type">{casting.castingType}</span>
+                                        <span className={`status-badge ${getStatusClass(casting.status)}`}>
+                                            {getStatusText(casting.status)}
+                                        </span>
+                                    </div>
+                                    <div className="profile-date">
+                                        {translations[language].createdAt}: {formatDate(casting.createdAt)}
+                                    </div>
+                                </div>
+                            </div>
 
+                            {/* Navigation Tabs */}
+                            <div className="tabs-container">
+                                <button
+                                    className={`tab-button ${activeTab === 'basic' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('basic')}
+                                >
+                                    {translations[language].basicInfo}
+                                </button>
+                                <button
+                                    className={`tab-button ${activeTab === 'physical' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('physical')}
+                                >
+                                    {translations[language].physicalInfo}
+                                </button>
+                                <button
+                                    className={`tab-button ${activeTab === 'contact' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('contact')}
+                                >
+                                    {translations[language].contactInfo}
+                                </button>
+                                {casting.photos && casting.photos.length > 0 && (
+                                    <button
+                                        className={`tab-button ${activeTab === 'gallery' ? 'active' : ''}`}
+                                        onClick={() => setActiveTab('gallery')}
+                                    >
+                                        {translations[language].gallery}
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Tab Content */}
+                            <div className="tab-content">
+                                {renderTabContent()}
                             </div>
                         </div>
                     </div>
                 )}
 
-
-                <Modal open={isModalOpen} onClose={closeImageModal} center>
+                {/* Image Modal */}
+                <Modal
+                    open={isModalOpen}
+                    onClose={closeImageModal}
+                    center
+                    classNames={{
+                        overlay: 'custom-overlay',
+                        modal: 'custom-modal',
+                    }}
+                    closeIcon={<FiX size={24} color="#fff" />}
+                >
                     {selectedImage && (
                         <img
                             src={selectedImage}
                             alt="Full Image"
-                            style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain' }}
+                            className="modal-image"
                         />
                     )}
                 </Modal>
-
             </main>
         </div>
     );

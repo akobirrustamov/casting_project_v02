@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import ApiCall, { baseUrl } from '../../config/index';
+import ApiCall from '../../config/index';
 import './DataForm.css';
-import Header from "../header/Header"; // We'll create this CSS file
+import Header from "../header/Header";
 
-function DataForm(props) {
+function DataForm() {
     const { userId } = useParams();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
@@ -14,7 +14,6 @@ function DataForm(props) {
     const [language, setLanguage] = useState('uz');
 
     useEffect(() => {
-        // Get language from localStorage
         const savedLanguage = localStorage.getItem('selectedLanguage') || 'uz';
         setLanguage(savedLanguage);
     }, []);
@@ -41,7 +40,6 @@ function DataForm(props) {
             selectGender: "Jinsni tanlang",
             male: "Erkak",
             female: "Ayol",
-            other: "Boshqa",
             fullName: "To'liq Ism",
             region: "Viloyat",
             nationality: "Millati",
@@ -62,7 +60,7 @@ function DataForm(props) {
             instagram: "Instagram",
             price: "Kutilayotgan narx ($)",
             uploadPhotos: "Rasmlar yuklash (bir nechta rasm yuklash mumkin)",
-            photoHint: "Iltimos, yuzingiz va butun tanaingiz ko'rinadigan aniq rasmlarni yuklang",
+            photoHint: "Iltimos, yuzingiz va butun tanaingiz ko'rinadigan aniq rasmlarni yuklang(6 tadan kam bo'lmasin)",
             remove: "×"
         },
         ru: {
@@ -86,7 +84,6 @@ function DataForm(props) {
             selectGender: "Выберите пол",
             male: "Мужской",
             female: "Женский",
-            other: "Другой",
             fullName: "Полное имя",
             region: "Регион",
             nationality: "Национальность",
@@ -107,7 +104,7 @@ function DataForm(props) {
             instagram: "Instagram",
             price: "Ожидаемая цена ($)",
             uploadPhotos: "Загрузить фотографии (можно несколько)",
-            photoHint: "Пожалуйста, загрузите четкие фотографии, показывающие ваше лицо и фигуру",
+            photoHint: "Пожалуйста, загрузите чёткие фотографии, на которых видно ваше лицо и всё тело (не менее 6 штук)",
             remove: "×"
         }
     };
@@ -138,6 +135,24 @@ function DataForm(props) {
         photos: []
     });
 
+    const isFormValid = () => {
+        const requiredFields = [
+            formData.castingType,
+            formData.gender,
+            formData.name,
+            formData.region,
+            formData.nationality,
+            formData.age,
+            formData.height,
+            formData.hairColor,
+            formData.eyeColor,
+            formData.email,
+            formData.phone
+        ];
+        const allFieldsFilled = requiredFields.every(field => field && field.trim() !== '');
+        const hasEnoughPhotos = formData.photos.length >= 6;
+        return allFieldsFilled && hasEnoughPhotos;
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -149,24 +164,20 @@ function DataForm(props) {
 
     const handleImageUpload = async (e) => {
         const files = Array.from(e.target.files);
-
-        // Create previews
         const previews = files.map(file => URL.createObjectURL(file));
         setImagePreviews(prev => [...prev, ...previews]);
 
-        // Upload images and get UUIDs
         const uploadedIds = [];
         for (const file of files) {
             try {
-                const formData = new FormData();
-                formData.append('photo', file);
-                formData.append('prefix', '/users/'+userId);
-
-                const response = await ApiCall('/api/v1/file/upload', 'POST', formData, null, true);
+                const uploadData = new FormData();
+                uploadData.append('photo', file);
+                uploadData.append('prefix', '/users/' + userId);
+                const response = await ApiCall('/api/v1/file/upload', 'POST', uploadData, null, true);
                 uploadedIds.push(response.data);
             } catch (error) {
-                console.error("Error uploading image:", error);
-                setError("Failed to upload some images");
+                console.error("Image upload error:", error);
+                setError("Rasmlarni yuklashda xatolik yuz berdi");
             }
         }
 
@@ -194,8 +205,13 @@ function DataForm(props) {
         setLoading(true);
         setError(null);
 
+        if (formData.photos.length < 6) {
+            setError("Kamida 6 ta rasm yuklashingiz shart!");
+            setLoading(false);
+            return;
+        }
+
         try {
-            // Convert age and height to numbers
             const payload = {
                 ...formData,
                 age: parseInt(formData.age),
@@ -209,16 +225,16 @@ function DataForm(props) {
             const response = await ApiCall('/api/v1/casting-user', 'POST', payload);
 
             if (response.error) {
-                setError(response.data?.message || "Failed to submit form");
+                setError(response.data?.message || "Formani yuborishda xatolik");
             } else {
                 setSuccess(true);
                 setTimeout(() => {
-                    navigate('/success'); // Redirect to success page
+                    navigate('/success');
                 }, 2000);
             }
         } catch (error) {
-            console.error("Error submitting form:", error);
-            setError("An error occurred while submitting the form");
+            console.error("Submit error:", error);
+            setError("Formani yuborishda xatolik yuz berdi");
         } finally {
             setLoading(false);
         }
@@ -226,7 +242,7 @@ function DataForm(props) {
 
     return (
         <div className={"history-container"}>
-            <Header props={"data-form"}/>
+            <Header props={"data-form"} />
             <div className="data-form-container">
 
                 <div className="form-header">
@@ -248,7 +264,6 @@ function DataForm(props) {
 
                 <form onSubmit={handleSubmit} className="casting-form">
                     <input type="hidden" name="telegramId" value={formData.telegramId} />
-
                     <div className="form-section">
                         <h2>{translations[language].basicInfo}</h2>
                         <div className="form-row">
@@ -279,7 +294,6 @@ function DataForm(props) {
                                     <option value="">{translations[language].selectGender}</option>
                                     <option value="male">{translations[language].male}</option>
                                     <option value="female">{translations[language].female}</option>
-                                    <option value="other">{translations[language].other}</option>
                                 </select>
                             </div>
                         </div>
@@ -331,7 +345,6 @@ function DataForm(props) {
                             </div>
                         </div>
                     </div>
-
                     <div className="form-section">
                         <h2>{translations[language].physicalChars}</h2>
                         <div className="form-row">
@@ -406,39 +419,43 @@ function DataForm(props) {
                             </div>
                         </div>
 
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>{translations[language].bust}</label>
-                                <input
-                                    type="text"
-                                    name="bust"
-                                    value={formData.bust}
-                                    onChange={handleChange}
-                                />
-                            </div>
+                        {/* Agar gender male bo‘lmasa, bust va son inputlarini chiqaramiz */}
+                        {formData.gender !== 'male' && (
+                            <>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>{translations[language].bust}</label>
+                                        <input
+                                            type="text"
+                                            name="bust"
+                                            value={formData.bust}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
 
-                            <div className="form-group">
-                                <label>{translations[language].waist}</label>
-                                <input
-                                    type="text"
-                                    name="waist"
-                                    value={formData.waist}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                        </div>
+                                    <div className="form-group">
+                                        <label>{translations[language].son}</label>
+                                        <input
+                                            type="text"
+                                            name="son"
+                                            value={formData.son}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                </div>
+                            </>
+                        )}
 
                         <div className="form-group">
-                            <label>{translations[language].son}</label>
+                            <label>{translations[language].waist}</label>
                             <input
                                 type="text"
-                                name="son"
-                                value={formData.son}
+                                name="waist"
+                                value={formData.waist}
                                 onChange={handleChange}
                             />
                         </div>
                     </div>
-
                     <div className="form-section">
                         <h2>{translations[language].contactInfo}</h2>
                         <div className="form-row">
@@ -499,7 +516,6 @@ function DataForm(props) {
 
 
                     </div>
-
                     <div className="form-section">
                         <h2>{translations[language].photos}</h2>
                         <div className="form-group">
@@ -531,15 +547,15 @@ function DataForm(props) {
                             </div>
                         )}
                     </div>
-
                     <div className="form-actions">
                         <button
                             type="submit"
                             className="submit-button"
-                            disabled={loading}
+                            disabled={!isFormValid() || loading}
                         >
                             {loading ? '...' : translations[language].submit}
                         </button>
+
                     </div>
                 </form>
             </div>

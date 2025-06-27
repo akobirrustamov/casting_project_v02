@@ -23,7 +23,7 @@ function History(props) {
     const fetchCasting = async () => {
         setLoading(true);
         try {
-            const response = await ApiCall('/api/v1/casting-user/my/'+userId, 'GET');
+            const response = await ApiCall('/api/v1/casting-user/my/' + userId, 'GET');
             if (response.error) {
                 setError(response.data);
             } else {
@@ -97,7 +97,6 @@ function History(props) {
     return (
         <div className="history-container">
             <Header props={"history"} />
-            <div className="header-spacer"></div>
 
             <main className="history-main">
                 <div className="history-header">
