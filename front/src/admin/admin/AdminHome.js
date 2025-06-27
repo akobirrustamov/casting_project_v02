@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ApiCall from "../../config";
 import Header from "./Header";
+import './AdminHome.css';
 
 const AdminHome = () => {
     const [stats, setStats] = useState(null);
@@ -28,38 +29,122 @@ const AdminHome = () => {
         }
     };
 
-    return (
-        <div>
-            <Header props='admin' />
-            <div className="p-6">
-                <h1 className="text-2xl font-bold mb-4">Admin Statistikasi</h1>
+    // Donut chart uchun hisob-kitoblar
+    const calculateDonutSegments = () => {
+        if (!stats) return [];
 
+        const total = stats.totalCount || 1;
+        const accepted = (stats.acceptedCount / total) * 360;
+        const pending = (stats.pendingCount / total) * 360;
+        const rejected = (stats.rejectedCount / total) * 360;
+
+        return [
+            { degrees: accepted, color: '#4895ef' },
+            { degrees: pending, color: '#4cc9f0' },
+            { degrees: rejected, color: '#ef4444' }
+        ];
+    };
+
+    const donutSegments = calculateDonutSegments();
+
+    return (
+        <div style={{ backgroundColor: '#000000' }}>
+            <Header props='admin' />
+            <div className="admin-stats-container">
+                <h1 className="admin-stats-title">Admin Statistikasi</h1>
                 {loading ? (
-                    <p>Yuklanmoqda...</p>
+                    <p className="loading-text">Yuklanmoqda...</p>
                 ) : error ? (
-                    <p className="text-red-500">{error}</p>
+                    <p className="error-text">{error}</p>
                 ) : stats && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div className="bg-white p-4 rounded shadow">
-                            <h2 className="font-semibold">1 kunlik topshirganlar</h2>
-                            <p className="text-xl">{stats.dailyCount}</p>
+                    <div className="stats-grid">
+
+                        {/* Umumiy topshirganlar - Donut chart */}
+                        <div className="stat-card">
+                            <h2 className="stat-title">Umumiy topshirganlar</h2>
+                            <div className="donut-chart">
+                                <div className="donut-chart-bg"></div>
+                                {donutSegments.map((segment, index) => (
+                                    <div
+                                        key={index}
+                                        className="donut-segment"
+                                        style={{
+                                            transform: `rotate(${index === 0 ? 0 : donutSegments.slice(0, index).reduce((a, b) => a + b.degrees, 0)}deg)`,
+                                            background: segment.degrees > 0 ? segment.color : 'transparent'
+                                        }}
+                                    ></div>
+                                ))}
+                                <div className="donut-center">
+                                    {stats.totalCount}
+                                </div>
+                            </div>
+                            <div className="donut-legend">
+                                <div className="legend-item">
+                                    <div className="legend-color status-accepted"></div>
+                                    <span>Qabul qilingan</span>
+                                </div>
+                                <div className="legend-item">
+                                    <div className="legend-color status-pending"></div>
+                                    <span>Ko'rib chiqilmoqda</span>
+                                </div>
+                                <div className="legend-item">
+                                    <div className="legend-color status-rejected"></div>
+                                    <span>Rad etilgan</span>
+                                </div>
+                            </div>
                         </div>
-                        <div className="bg-white p-4 rounded shadow">
-                            <h2 className="font-semibold">Umumiy topshirganlar</h2>
-                            <p className="text-xl">{stats.totalCount}</p>
+
+                        {/* Holatlar bo'yicha statistikalar */}
+                        <div className="stat-card">
+                            <h2 className="stat-title">Holatlar bo'yicha statistikalar</h2>
+
+                            <div className="progress-container">
+                                <h3>Qabul qilinganlar</h3>
+                                <div className="progress-bar">
+                                    <div
+                                        className="progress-fill status-accepted"
+                                        style={{ width: `${(stats.acceptedCount / stats.totalCount) * 100}%` }}
+                                    ></div>
+                                </div>
+                                <div className="stat-value">{stats.acceptedCount}</div>
+                            </div>
+
+                            <div className="progress-container">
+                                <h3>Ko'rib chiqilayotganlar</h3>
+                                <div className="progress-bar">
+                                    <div
+                                        className="progress-fill status-pending"
+                                        style={{ width: `${(stats.pendingCount / stats.totalCount) * 100}%` }}
+                                    ></div>
+                                </div>
+                                <div className="stat-value">{stats.pendingCount}</div>
+                            </div>
+
+                            <div className="progress-container">
+                                <h3>Rad etilganlar</h3>
+                                <div className="progress-bar">
+                                    <div
+                                        className="progress-fill status-rejected"
+                                        style={{ width: `${(stats.rejectedCount / stats.totalCount) * 100}%` }}
+                                    ></div>
+                                </div>
+                                <div className="stat-value">{stats.rejectedCount}</div>
+                            </div>
                         </div>
-                        <div className="bg-white p-4 rounded shadow">
-                            <h2 className="font-semibold">Rad etilganlar</h2>
-                            <p className="text-xl">{stats.rejectedCount}</p>
+                        {/* 1 kunlik topshirganlar */}
+                        <div className="stat-card">
+                            <h2 className="stat-title">Kunlik topshirganlar</h2>
+                            <div className="bar-chart">
+                                <div
+                                    className="bar"
+                                    style={{
+                                        height: `${Math.min(100, (stats.dailyCount / Math.max(1, stats.totalCount)) * 100)}%`
+                                    }}
+                                ></div>
+                            </div>
+                            <div className="stat-value">{stats.dailyCount}</div>
                         </div>
-                        <div className="bg-white p-4 rounded shadow">
-                            <h2 className="font-semibold">Qabul qilinganlar</h2>
-                            <p className="text-xl">{stats.acceptedCount}</p>
-                        </div>
-                        <div className="bg-white p-4 rounded shadow">
-                            <h2 className="font-semibold">Ko‘rib chiqilayotganlar</h2>
-                            <p className="text-xl">{stats.pendingCount}</p>
-                        </div>
+
                     </div>
                 )}
             </div>
