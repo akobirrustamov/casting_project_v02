@@ -29,7 +29,6 @@ const AdminHome = () => {
         }
     };
 
-    // Donut chart uchun hisob-kitoblar
     const calculateDonutSegments = () => {
         if (!stats) return [];
 

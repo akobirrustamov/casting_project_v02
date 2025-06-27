@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import ApiCall from "../../config";
-import Sidebar from "./Sidebar";
-import 'rodal/lib/rodal.css';
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Header from "./Header";
-import Rodal from 'rodal';
-import { FaEdit, FaTrash, FaPlus, FaTimes } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaTimes, FaSpinner } from 'react-icons/fa';
+import './AdminNews.css';
 
 const AdminNews = () => {
     const [newsList, setNewsList] = useState([]);
@@ -14,7 +12,6 @@ const AdminNews = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [currentNews, setCurrentNews] = useState(null);
-    const [isEditing, setIsEditing] = useState(false);
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
@@ -43,8 +40,8 @@ const AdminNews = () => {
                 setNewsList(response.data);
             }
         } catch (error) {
-            console.error("Error fetching news:", error);
-            setError("Failed to fetch news");
+            console.error("Yangiliklarni yuklashda xatolik:", error);
+            setError("Yangiliklarni yuklab bo'lmadi");
         } finally {
             setLoading(false);
         }
@@ -59,7 +56,7 @@ const AdminNews = () => {
             const response = await ApiCall('/api/v1/file/upload', 'POST', formData, null, true);
             return response.data;
         } catch (error) {
-            console.error("Error uploading image:", error);
+            console.error("Rasm yuklashda xatolik:", error);
             throw error;
         }
     };
@@ -121,29 +118,11 @@ const AdminNews = () => {
             mainPhotoPreview: null,
             additionalImagesPreviews: []
         });
-        setIsEditing(false);
         setCurrentNews(null);
     };
 
     const openCreateModal = () => {
         resetForm();
-        setModalVisible(true);
-    };
-
-    const openEditModal = (news) => {
-        setCurrentNews(news);
-        setFormData({
-            titleUz: news.titleUz,
-            titleRu: news.titleRu,
-            descriptionUz: news.descriptionUz,
-            descriptionRu: news.descriptionRu,
-            link: news.link,
-            mainImage: null,
-            additionalImages: [],
-            mainPhotoPreview: news.mainPhoto ? `/api/v1/file/getFile/${news.mainPhoto.id}` : null,
-            additionalImagesPreviews: news.photos.map(photo => `/api/v1/file/getFile/${photo.id}`)
-        });
-        setIsEditing(true);
         setModalVisible(true);
     };
 
@@ -166,25 +145,13 @@ const AdminNews = () => {
             let mainPhotoUuid = null;
             const additionalImagesUuids = [];
 
-            // Upload new main image if it exists
             if (formData.mainImage) {
                 mainPhotoUuid = await uploadImage(formData.mainImage, '/main');
-            } else if (isEditing && currentNews.mainPhoto) {
-                // Use existing main photo if not uploading new one
-                mainPhotoUuid = currentNews.mainPhoto.id;
             }
 
-            // Upload new additional images
             for (const image of formData.additionalImages) {
                 const uuid = await uploadImage(image, '/additional');
                 additionalImagesUuids.push(uuid);
-            }
-
-            // Include existing additional images if editing
-            if (isEditing && currentNews.photos) {
-                currentNews.photos.forEach(photo => {
-                    additionalImagesUuids.push(photo.id);
-                });
             }
 
             const newsData = {
@@ -197,10 +164,7 @@ const AdminNews = () => {
                 photos: additionalImagesUuids
             };
 
-            const url = isEditing ? `/api/v1/news/${currentNews.id}` : '/api/v1/news';
-            const method = isEditing ? 'PUT' : 'POST';
-
-            const response = await ApiCall(url, method, newsData, null, true);
+            const response = await ApiCall('/api/v1/news', 'POST', newsData, null, true);
 
             if (response.error) {
                 setError(response.data);
@@ -209,8 +173,8 @@ const AdminNews = () => {
                 closeModal();
             }
         } catch (error) {
-            console.error("Error saving news:", error);
-            setError("Failed to save news");
+            console.error("Yangilikni saqlashda xatolik:", error);
+            setError("Yangilikni saqlab bo'lmadi");
         } finally {
             setLoading(false);
         }
@@ -227,260 +191,228 @@ const AdminNews = () => {
                 closeModal();
             }
         } catch (error) {
-            console.error("Error deleting news:", error);
-            setError("Failed to delete news");
+            console.error("Yangilikni o'chirishda xatolik:", error);
+            setError("Yangilikni o'chirib bo'lmadi");
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="flex h-screen bg-gray-100">
+        <div className="mobile-news-dark">
+            <Header props='admin/news' />
 
-            <div className="flex-1 overflow-auto">
-                <Header props='admin/news' />
-
-                <div className="p-6">
-                    <div className="flex justify-between items-center mb-6">
-                        <h1 className="text-2xl font-bold text-gray-800">News Management</h1>
-                        <button
-                            onClick={openCreateModal}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center"
-                        >
-                            <FaPlus className="mr-2" /> Add News
-                        </button>
-                    </div>
-
-                    {error && (
-                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                            {error}
-                        </div>
-                    )}
-
-                    {loading && !newsList.length ? (
-                        <div className="flex justify-center items-center h-64">
-                            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-                        </div>
-                    ) : (
-                        <div className="bg-white shadow rounded-lg overflow-hidden">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title (UZ)</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title (RU)</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                {newsList.map((news) => (
-                                    <tr key={news.id}>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-gray-900">{news.titleUz}</div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">{news.titleRu}</div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-500">
-                                                {new Date(news.createdAt).toLocaleDateString()}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <button
-                                                onClick={() => openEditModal(news)}
-                                                className="text-indigo-600 hover:text-indigo-900 mr-4"
-                                            >
-                                                <FaEdit />
-                                            </button>
-                                            <button
-                                                onClick={() => openDeleteModal(news)}
-                                                className="text-red-600 hover:text-red-900"
-                                            >
-                                                <FaTrash />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
+            <div className="mobile-news-header">
+                <h1 className="mobile-news-title">Yangiliklar</h1>
+                <button
+                    onClick={openCreateModal}
+                    className="add-news-btn"
+                >
+                    <FaPlus /> Qo'shish
+                </button>
             </div>
 
-            {/* Add/Edit Modal */}
-            <Rodal
-                visible={modalVisible}
-                onClose={closeModal}
-                width={800}
-                height={600}
-                customStyles={{ overflowY: 'auto' }}
-            >
-                <div className="p-4">
-                    <h2 className="text-xl font-bold mb-4">
-                        {isEditing ? 'Edit News' : 'Add New News'}
-                    </h2>
+            {error && (
+                <div className="error-message">
+                    {error}
+                </div>
+            )}
 
-                    <form onSubmit={handleSubmit}>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Title (Uzbek)</label>
+            {loading && !newsList.length ? (
+                <div className="loading-spinner">
+                    <div className="spinner"></div>
+                </div>
+            ) : (
+                <div className="news-list">
+                    {newsList.map((news) => (
+                        <div key={news.id} className="news-card">
+                            <div className="news-card-header">
+                                <h3 className="news-card-title">{news.titleUz}</h3>
+                                <span className="news-card-date">
+                                    {new Date(news.createdAt).toLocaleDateString()}
+                                </span>
+                            </div>
+                            <div className="news-card-content">
+                                <p>{news.descriptionUz.substring(0, 100)}...</p>
+                            </div>
+                            <div className="news-card-actions">
+                                <button
+                                    onClick={() => openDeleteModal(news)}
+                                    className="delete-btn"
+                                >
+                                    <FaTrash /> O'chirish
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Yangi qo'shish modali */}
+            {modalVisible && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h2 className="modal-title">Yangi Yangilik</h2>
+                            <button onClick={closeModal} className="close-btn">
+                                <FaTimes />
+                            </button>
+                        </div>
+                        <form onSubmit={handleSubmit}>
+                            <div className="form-group">
+                                <label className="form-label">Sarlavha (O'zbekcha)</label>
                                 <input
                                     type="text"
                                     name="titleUz"
                                     value={formData.titleUz}
                                     onChange={handleInputChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                    className="form-input"
                                     required
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Title (Russian)</label>
+                            <div className="form-group">
+                                <label className="form-label">Sarlavha (Ruscha)</label>
                                 <input
                                     type="text"
                                     name="titleRu"
                                     value={formData.titleRu}
                                     onChange={handleInputChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                    className="form-input"
                                     required
                                 />
                             </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Description (Uzbek)</label>
+                            <div className="form-group">
+                                <label className="form-label">Tavsif (O'zbekcha)</label>
                                 <textarea
                                     name="descriptionUz"
                                     value={formData.descriptionUz}
                                     onChange={handleInputChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                                    rows="4"
+                                    className="form-input form-textarea"
                                     required
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Description (Russian)</label>
+                            <div className="form-group">
+                                <label className="form-label">Tavsif (Ruscha)</label>
                                 <textarea
                                     name="descriptionRu"
                                     value={formData.descriptionRu}
                                     onChange={handleInputChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                                    rows="4"
+                                    className="form-input form-textarea"
                                     required
                                 />
                             </div>
-                        </div>
-
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">YouTube Link (iframe)</label>
-                            <input
-                                type="text"
-                                name="link"
-                                value={formData.link}
-                                onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                                placeholder="https://www.youtube.com/embed/..."
-                            />
-                        </div>
-
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Main Image</label>
-                            <input
-                                type="file"
-                                onChange={handleMainImageChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                                accept="image/*"
-                            />
-                            {formData.mainPhotoPreview && (
-                                <div className="mt-2">
-                                    <img
-                                        src={formData.mainPhotoPreview}
-                                        alt="Main preview"
-                                        className="h-32 object-cover rounded"
-                                    />
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Additional Images</label>
-                            <input
-                                type="file"
-                                onChange={handleAdditionalImagesChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                                accept="image/*"
-                                multiple
-                            />
-                            <div className="flex flex-wrap mt-2 gap-2">
-                                {formData.additionalImagesPreviews.map((preview, index) => (
-                                    <div key={index} className="relative">
-                                        <img
-                                            src={preview}
-                                            alt={`Additional ${index}`}
-                                            className="h-24 w-24 object-cover rounded"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => removeAdditionalImage(index)}
-                                            className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
-                                        >
-                                            <FaTimes size={12} />
-                                        </button>
-                                    </div>
-                                ))}
+                            <div className="form-group">
+                                <label className="form-label">YouTube Havolasi</label>
+                                <input
+                                    type="text"
+                                    name="link"
+                                    value={formData.link}
+                                    onChange={handleInputChange}
+                                    className="form-input"
+                                    placeholder="https://www.youtube.com/embed/..."
+                                />
                             </div>
-                        </div>
-
-                        <div className="flex justify-end space-x-3 mt-6">
-                            <button
-                                type="button"
-                                onClick={closeModal}
-                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300"
-                                disabled={loading}
-                            >
-                                {loading ? 'Saving...' : isEditing ? 'Update' : 'Save'}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </Rodal>
-
-            {/* Delete Confirmation Modal */}
-            <Rodal
-                visible={deleteModalVisible}
-                onClose={closeModal}
-                width={400}
-                height={200}
-            >
-                <div className="p-4">
-                    <h2 className="text-xl font-bold mb-4">Confirm Delete</h2>
-                    <p className="mb-6">Are you sure you want to delete this news item?</p>
-
-                    <div className="flex justify-end space-x-3">
-                        <button
-                            onClick={closeModal}
-                            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={handleDelete}
-                            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-red-300"
-                            disabled={loading}
-                        >
-                            {loading ? 'Deleting...' : 'Delete'}
-                        </button>
+                            <div className="form-group">
+                                <label className="form-label">Asosiy Rasm</label>
+                                <label className="file-input-label">
+                                    Rasm tanlang
+                                    <input
+                                        type="file"
+                                        onChange={handleMainImageChange}
+                                        style={{ display: 'none' }}
+                                        accept="image/*"
+                                    />
+                                </label>
+                                {formData.mainPhotoPreview && (
+                                    <div className="image-preview-container">
+                                        <div className="image-preview">
+                                            <img
+                                                src={formData.mainPhotoPreview}
+                                                alt="Asosiy rasm"
+                                                className="preview-image"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Qo'shimcha Rasmlar</label>
+                                <label className="file-input-label">
+                                    Rasmlar tanlang
+                                    <input
+                                        type="file"
+                                        onChange={handleAdditionalImagesChange}
+                                        style={{ display: 'none' }}
+                                        accept="image/*"
+                                        multiple
+                                    />
+                                </label>
+                                <div className="image-preview-container">
+                                    {formData.additionalImagesPreviews.map((preview, index) => (
+                                        <div key={index} className="image-preview">
+                                            <img
+                                                src={preview}
+                                                alt={`Qo'shimcha ${index + 1}`}
+                                                className="preview-image"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeAdditionalImage(index)}
+                                                className="remove-image-btn"
+                                            >
+                                                <FaTimes />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="form-actions">
+                                <button
+                                    type="button"
+                                    onClick={closeModal}
+                                    className="cancel-btn"
+                                >
+                                    Bekor qilish
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="submit-btn"
+                                    disabled={loading}
+                                >
+                                    {loading ? <FaSpinner className="animate-spin" /> : "Saqlash"}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            </Rodal>
+            )}
+
+            {/* O'chirish tasdiq modali */}
+            {deleteModalVisible && (
+                <div className="modal-overlay">
+                    <div className="delete-modal-content">
+                        <h2 className="modal-title">O'chirishni Tasdiqlang</h2>
+                        <p className="delete-modal-text">
+                            Ushbu yangilikni rostdan ham o'chirmoqchimisiz?
+                        </p>
+                        <div className="delete-modal-actions">
+                            <button
+                                onClick={closeModal}
+                                className="cancel-btn"
+                            >
+                                Bekor qilish
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                className="confirm-delete-btn"
+                                disabled={loading}
+                            >
+                                {loading ? <FaSpinner className="animate-spin" /> : "O'chirish"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

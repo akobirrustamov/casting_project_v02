@@ -1,0 +1,246 @@
+/* Asosiy stil */
+.casting-detail-dark {
+  font-family: "Inter", -apple-system, sans-serif;
+  background-color: #000000;
+  color: #ffffff;
+  min-height: 100vh;
+}
+
+/* Kontent */
+.casting-detail-content {
+  padding: 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Orqaga tugmasi */
+.back-button {
+  background-color: #1a1a1a;
+  color: #3b82f6;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  background-color: #1e3a8a;
+  color: white;
+}
+
+/* Yuklash holati */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(59, 130, 246, 0.2);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Xatolik xabari */
+.error-message {
+  background-color: #450a0a;
+  color: #fca5a5;
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  border-left: 4px solid #ef4444;
+}
+
+/* Ma'lumotlar bo'limi */
+.casting-card {
+  background-color: #1a1a1a;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #333333;
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #333333;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.info-item {
+  background-color: #262626;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.info-item b {
+  color: #a1a1aa;
+  margin-right: 0.5rem;
+}
+
+/* Status badge */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-left: 0.5rem;
+}
+
+.status-pending {
+  background-color: #422006;
+  color: #f59e0b;
+}
+
+.status-approved {
+  background-color: #052e16;
+  color: #10b981;
+}
+
+.status-rejected {
+  background-color: #450a0a;
+  color: #ef4444;
+}
+
+/* Galereya */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.gallery-item {
+  aspect-ratio: 1/1;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.gallery-item:hover {
+  transform: scale(1.03);
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Tugmalar */
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.action-btn {
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.accept-btn {
+  background-color: #1d4ed8;
+  color: white;
+}
+
+.accept-btn:hover {
+  background-color: #1e40af;
+}
+
+.reject-btn {
+  background-color: #7f1d1d;
+  color: #fca5a5;
+}
+
+.reject-btn:hover {
+  background-color: #991b1b;
+}
+
+.price-btn {
+  background-color: #075985;
+  color: white;
+}
+
+.price-btn:hover {
+  background-color: #0c4a6e;
+}
+
+/* Modal */
+.modal-overlay {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+}
+
+.modal-content {
+  background-color: #1a1a1a !important;
+  border: 1px solid #333333 !important;
+  border-radius: 12px !important;
+  padding: 1.5rem !important;
+  max-width: 500px !important;
+  width: 90% !important;
+}
+
+.modal-title {
+  color: white !important;
+  margin-bottom: 1rem !important;
+}
+
+.price-input {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #262626;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
