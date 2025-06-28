@@ -267,7 +267,7 @@ const AdminNews = () => {
                                     value={formData.titleUz}
                                     onChange={handleInputChange}
                                     className="form-input"
-                                    required
+                                    
                                 />
                             </div>
                             <div className="form-group">
@@ -278,7 +278,7 @@ const AdminNews = () => {
                                     value={formData.titleRu}
                                     onChange={handleInputChange}
                                     className="form-input"
-                                    required
+                                    
                                 />
                             </div>
                             <div className="form-group">
@@ -288,7 +288,7 @@ const AdminNews = () => {
                                     value={formData.descriptionUz}
                                     onChange={handleInputChange}
                                     className="form-input form-textarea"
-                                    required
+                                    
                                 />
                             </div>
                             <div className="form-group">
@@ -298,7 +298,7 @@ const AdminNews = () => {
                                     value={formData.descriptionRu}
                                     onChange={handleInputChange}
                                     className="form-input form-textarea"
-                                    required
+                                    
                                 />
                             </div>
                             <div className="form-group">

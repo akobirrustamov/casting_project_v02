@@ -3,10 +3,13 @@ import Header from "../header/Header";
 import "react-responsive-modal/styles.css";
 import ApiCall, { baseUrl } from '../../config/index';
 import './home.css';
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { FaArrowDown } from "react-icons/fa";
 
 function Home(props) {
     const { userId } = useParams();
+    const navigate = useNavigate();
+
     const [newsList, setNewsList] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -126,7 +129,7 @@ function Home(props) {
                                         {news.photos && news.photos.length > 0 && (
                                             <div className="news-gallery">
                                                 <h4 className="gallery-title">{translations[language].gallery}</h4>
-                                                <div className="gallery-grid">
+                                                <div className="gallery-grid responsive">
                                                     {news.photos.map((photo) => (
                                                         <div key={photo.id} className="gallery-item">
                                                             <img
@@ -155,6 +158,14 @@ function Home(props) {
                     </>
                 )}
             </main>
+
+            {/* Fixed Navigate Button */}
+            <button
+                onClick={() => navigate(`/data-form/${userId}`)}
+                className="fixed-navigate-btn"
+            >
+                <FaArrowDown className="animate-bounce text-white text-2xl" />
+            </button>
         </div>
     );
 }

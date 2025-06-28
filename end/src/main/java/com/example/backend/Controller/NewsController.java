@@ -34,7 +34,7 @@ public class NewsController {
     @PostMapping
     public HttpEntity<?> addNews(@RequestBody NewsDTO newsDTO){
         System.out.println(newsDTO);
-        Attachment attachment = new Attachment();
+        Attachment attachment = null;
         if (newsDTO.getMainPhoto() != null) {
             Optional<Attachment> byId = attachmentRepo.findById(newsDTO.getMainPhoto());
             if (byId.isPresent()) {
@@ -43,13 +43,13 @@ public class NewsController {
                 return ResponseEntity.notFound().build();
             }
         }
-        List<Attachment> attachments = new ArrayList<>();
-        for (UUID photoId : newsDTO.getPhotos()) {
+        List<Attachment> attachments = null;
+        if(!newsDTO.getPhotos().isEmpty()){
+            for (UUID photoId : newsDTO.getPhotos()) {
                 Optional<Attachment> byId = attachmentRepo.findById(photoId);
-                if (byId.isPresent()) {
-                    attachments.add(byId.get());
-                }
+                byId.ifPresent(value -> attachments.add(value));
 
+            }
         }
         News newsEntity = new News(newsDTO.getTitleUz(),newsDTO.getTitleRu(), newsDTO.getDescriptionUz(), newsDTO.getDescriptionRu(), newsDTO.getLink(), attachment,attachments);
         newsRepo.save(newsEntity);

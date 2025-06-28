@@ -229,7 +229,7 @@ function DataForm() {
             } else {
                 setSuccess(true);
                 setTimeout(() => {
-                    navigate('/success');
+                    navigate(`/history/${userId}`);
                 }, 2000);
             }
         } catch (error) {

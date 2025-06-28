@@ -84,8 +84,8 @@ function CastingUserDetail() {
 
         setLoading(true);
         try {
-            await ApiCall(`/api/v1/casting-user/status/${castingUserId}/1`, 'PUT');
             await ApiCall(`/api/v1/casting-user/price/${castingUserId}/${price}`, 'PUT');
+            await ApiCall(`/api/v1/casting-user/status/${castingUserId}/1/${price}`, 'PUT');
             alert("Foydalanuvchi qabul qilindi va narx saqlandi.");
             fetchCasting();
             setIsPriceModalOpen(false);
@@ -104,7 +104,7 @@ function CastingUserDetail() {
 
         setLoading(true);
         try {
-            await ApiCall(`/api/v1/casting-user/status/${castingUserId}/2`, 'PUT');
+            await ApiCall(`/api/v1/casting-user/status/${castingUserId}/2/0`, 'PUT');
             alert("Foydalanuvchi rad etildi.");
             fetchCasting();
         } catch (error) {

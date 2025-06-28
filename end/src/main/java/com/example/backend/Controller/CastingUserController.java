@@ -3,8 +3,10 @@ package com.example.backend.Controller;
 import com.example.backend.DTO.CastingUserDTO;
 import com.example.backend.Entity.Attachment;
 import com.example.backend.Entity.CastingUser;
+import com.example.backend.Entity.Message;
 import com.example.backend.Repository.AttachmentRepo;
 import com.example.backend.Repository.CastingUserRepo;
+import com.example.backend.Repository.MessageRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -23,7 +25,7 @@ import java.util.UUID;
 public class CastingUserController {
     private final CastingUserRepo castingUserRepo;
     private final AttachmentRepo attachmentRepo;
-
+    private final MessageRepo messageRepo;
     @GetMapping
     public HttpEntity<?> getAllCastingUser(){
         List<CastingUser> all = castingUserRepo.findAll();
@@ -52,17 +54,38 @@ public class CastingUserController {
     }
 
 
-    @PutMapping("/status/{castingUserId}/{status}")
-    public HttpEntity<?> updateCastingUserStatus(@PathVariable Integer castingUserId, @PathVariable Integer status){
+    @PutMapping("/status/{castingUserId}/{status}/{price}")
+    public HttpEntity<?> updateCastingUserStatus(@PathVariable Integer castingUserId, @PathVariable Integer status, @PathVariable String price){
         Optional<CastingUser> byId = castingUserRepo.findById(castingUserId);
         if (byId.isEmpty()){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         byId.get().setStatus(status);
-        castingUserRepo.save(byId.get());
+        CastingUser save = castingUserRepo.save(byId.get());
 //        status=0 new
 //        status=1 qabul qilindi
 //        status=2 Rad etildi
+        Optional<Message> message = messageRepo.findByCastingUserId(castingUserId);
+        if (message.isEmpty()){
+            if (status == 1){
+                Message message1 = new Message(save,"\uD83D\uDFE2Siz Castingdan o'tdingiz!", price,  LocalDateTime.now(), true );
+                messageRepo.save(message1);
+            }
+            if (status == 2){
+                Message message2 = new Message(save,"⛔\uFE0F Afsuski, so‘rovingiz rad etildi! Castingdan o'ta olmadingiz.", "0",  LocalDateTime.now(), false);
+                messageRepo.save(message2);
+            }
+        }else{
+            Message message3 = message.get();
+            message3.setStatus(status==1);
+            message3.setPrice(price);
+            messageRepo.save(message3);
+        }
+
+
+
+
+
         return new ResponseEntity<>(HttpStatus.OK);
 
     }
