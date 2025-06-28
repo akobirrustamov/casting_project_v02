@@ -9,7 +9,6 @@ import { FaArrowDown } from "react-icons/fa";
 function Home(props) {
     const { userId } = useParams();
     const navigate = useNavigate();
-
     const [newsList, setNewsList] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);

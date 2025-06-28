@@ -58,16 +58,16 @@ function Header({ activeTab }) {
             casting: "Casting",
             my: "Tarix",
             language: "Til",
-            uzbek: "O'zbekcha",
-            russian: "Ruscha"
+            uzbek: "UZ",
+            russian: "RU"
         },
         ru: {
             home: "Главная",
             casting: "Кастинг",
             my: "История",
             language: "Язык",
-            uzbek: "Узбекский",
-            russian: "Русский"
+            uzbek: "УЗ",
+            russian: "РУ"
         }
     };
 
@@ -84,7 +84,7 @@ function Header({ activeTab }) {
 
                         {isMobile && (
                             <div className='for_flex'>
-                                <div className="language-selector">
+                                <div class="select-wrapper">
                                     <select
                                         value={language}
                                         onChange={(e) => changeLanguage(e.target.value)}
@@ -95,6 +95,7 @@ function Header({ activeTab }) {
                                         <option value="ru">{translations[language].russian}</option>
                                     </select>
                                 </div>
+
                                 <button
                                     className={`menu-toggle ${isMenuOpen ? 'open' : ''}`}
                                     onClick={toggleMenu}

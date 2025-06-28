@@ -32,10 +32,12 @@ function DataForm() {
             requiredField: "Majburiy maydon",
             castingType: "Casting Turi",
             selectType: "Turini tanlang",
-            model: "Model",
             actor: "Aktyor",
-            extra: "Statist",
-            influencer: "Inflyuencer",
+            extra: "Aktrisa",
+            model: "Modelyer",
+            euromodel: "Yevro Modelyer",
+            bloger: "Bloger",
+            influencer: "Reklama",
             gender: "Jins",
             selectGender: "Jinsni tanlang",
             male: "Erkak",
@@ -76,9 +78,11 @@ function DataForm() {
             requiredField: "Обязательное поле",
             castingType: "Тип кастинга",
             selectType: "Выберите тип",
-            model: "Модель",
             actor: "Актер",
-            extra: "Статист",
+            extra: "Актриса",
+            model: "Модельер",
+            euromodel: "Евро-модельер",
+            bloger: "Блогер",
             influencer: "Инфлюенсер",
             gender: "Пол",
             selectGender: "Выберите пол",
@@ -275,8 +279,10 @@ function DataForm() {
                                     onChange={handleChange}
                                     required
                                 >
-                                    <option value="">{translations[language].selectType}</option>
+                                    <option disabled hidden value="">{translations[language].selectType}</option>
                                     <option value="model">{translations[language].model}</option>
+                                    <option value="euromodel">{translations[language].euromodel}</option>
+                                    <option value="bloger">{translations[language].bloger}</option>
                                     <option value="actor">{translations[language].actor}</option>
                                     <option value="extra">{translations[language].extra}</option>
                                     <option value="influencer">{translations[language].influencer}</option>
@@ -291,7 +297,7 @@ function DataForm() {
                                     onChange={handleChange}
                                     required
                                 >
-                                    <option value="">{translations[language].selectGender}</option>
+                                    <option disabled hidden value="">{translations[language].selectGender}</option>
                                     <option value="male">{translations[language].male}</option>
                                     <option value="female">{translations[language].female}</option>
                                 </select>
