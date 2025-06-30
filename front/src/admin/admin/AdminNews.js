@@ -163,10 +163,7 @@ const AdminNews = () => {
                 mainPhoto: mainPhotoUuid,
                 photos: additionalImagesUuids
             };
-            console.log(newsData);
-            
             const response = await ApiCall('/api/v1/news', 'POST', newsData, null, true);
-
             if (response.error) {
                 setError(response.data);
             } else {
@@ -268,7 +265,7 @@ const AdminNews = () => {
                                     value={formData.titleUz}
                                     onChange={handleInputChange}
                                     className="form-input"
-                                    
+
                                 />
                             </div>
                             <div className="form-group">
@@ -279,7 +276,7 @@ const AdminNews = () => {
                                     value={formData.titleRu}
                                     onChange={handleInputChange}
                                     className="form-input"
-                                    
+
                                 />
                             </div>
                             <div className="form-group">
@@ -289,7 +286,7 @@ const AdminNews = () => {
                                     value={formData.descriptionUz}
                                     onChange={handleInputChange}
                                     className="form-input form-textarea"
-                                    
+
                                 />
                             </div>
                             <div className="form-group">
@@ -299,7 +296,7 @@ const AdminNews = () => {
                                     value={formData.descriptionRu}
                                     onChange={handleInputChange}
                                     className="form-input form-textarea"
-                                    
+
                                 />
                             </div>
                             <div className="form-group">
