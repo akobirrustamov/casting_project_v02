@@ -265,9 +265,9 @@ const AdminNews = () => {
                                     value={formData.titleUz}
                                     onChange={handleInputChange}
                                     className="form-input"
-
                                 />
                             </div>
+
                             <div className="form-group">
                                 <label className="form-label">Sarlavha (Ruscha)</label>
                                 <input
@@ -276,9 +276,9 @@ const AdminNews = () => {
                                     value={formData.titleRu}
                                     onChange={handleInputChange}
                                     className="form-input"
-
                                 />
                             </div>
+
                             <div className="form-group">
                                 <label className="form-label">Tavsif (O'zbekcha)</label>
                                 <textarea
@@ -286,9 +286,11 @@ const AdminNews = () => {
                                     value={formData.descriptionUz}
                                     onChange={handleInputChange}
                                     className="form-input form-textarea"
-
-                                />
+                                    placeholder="Yangilik tavsifini kiriting..."
+                                    rows={5}
+                                ></textarea>
                             </div>
+
                             <div className="form-group">
                                 <label className="form-label">Tavsif (Ruscha)</label>
                                 <textarea
@@ -296,9 +298,11 @@ const AdminNews = () => {
                                     value={formData.descriptionRu}
                                     onChange={handleInputChange}
                                     className="form-input form-textarea"
-
-                                />
+                                    placeholder="Описание новости..."
+                                    rows={5}
+                                ></textarea>
                             </div>
+
                             <div className="form-group">
                                 <label className="form-label">YouTube Havolasi</label>
                                 <input
@@ -310,6 +314,7 @@ const AdminNews = () => {
                                     placeholder="https://www.youtube.com/embed/..."
                                 />
                             </div>
+
                             <div className="form-group">
                                 <label className="form-label">Asosiy Rasm</label>
                                 <label className="file-input-label">
@@ -317,7 +322,7 @@ const AdminNews = () => {
                                     <input
                                         type="file"
                                         onChange={handleMainImageChange}
-                                        style={{ display: 'none' }}
+                                        style={{ display: "none" }}
                                         accept="image/*"
                                     />
                                 </label>
@@ -333,6 +338,7 @@ const AdminNews = () => {
                                     </div>
                                 )}
                             </div>
+
                             <div className="form-group">
                                 <label className="form-label">Qo'shimcha Rasmlar</label>
                                 <label className="file-input-label">
@@ -340,7 +346,7 @@ const AdminNews = () => {
                                     <input
                                         type="file"
                                         onChange={handleAdditionalImagesChange}
-                                        style={{ display: 'none' }}
+                                        style={{ display: "none" }}
                                         accept="image/*"
                                         multiple
                                     />
@@ -364,6 +370,7 @@ const AdminNews = () => {
                                     ))}
                                 </div>
                             </div>
+
                             <div className="form-actions">
                                 <button
                                     type="button"
@@ -381,6 +388,7 @@ const AdminNews = () => {
                                 </button>
                             </div>
                         </form>
+
                     </div>
                 </div>
             )}

@@ -110,7 +110,7 @@ function Home(props) {
                                         </h2>
 
                                         <div className="news-description">
-                                            <p>{language === 'uz' ? news.descriptionUz : news.descriptionRu}</p>
+                                            <p style={{ whiteSpace: "pre-line" }}>{language === 'uz' ? news.descriptionUz : news.descriptionRu}</p>
                                         </div>
 
                                         {news.link && (
