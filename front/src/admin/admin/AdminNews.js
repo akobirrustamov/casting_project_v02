@@ -163,7 +163,8 @@ const AdminNews = () => {
                 mainPhoto: mainPhotoUuid,
                 photos: additionalImagesUuids
             };
-
+            console.log(newsData);
+            
             const response = await ApiCall('/api/v1/news', 'POST', newsData, null, true);
 
             if (response.error) {

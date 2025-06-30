@@ -162,8 +162,9 @@ function Home(props) {
             <button
                 onClick={() => navigate(`/data-form/${userId}`)}
                 className="fixed-navigate-btn"
+                aria-label="Pastga o'tish"
             >
-                <FaArrowDown className="animate-bounce text-white text-2xl" />
+                <FaArrowDown className="animate-bounce text-white text-3xl" /> {/* Kattaroq icon */}
             </button>
         </div>
     );

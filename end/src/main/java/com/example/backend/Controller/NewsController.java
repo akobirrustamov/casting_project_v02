@@ -25,62 +25,52 @@ public class NewsController {
 
 
     @GetMapping
-    public HttpEntity<?> getAllNews(){
+    public HttpEntity<?> getAllNews() {
         List<News> newsList = newsRepo.findAll();
         return ResponseEntity.ok(newsList);
     }
 
 
     @PostMapping
-    public HttpEntity<?> addNews(@RequestBody NewsDTO newsDTO){
+    public HttpEntity<?> addNews(@RequestBody NewsDTO newsDTO) {
         System.out.println(newsDTO);
         Attachment attachment = null;
         if (newsDTO.getMainPhoto() != null) {
             Optional<Attachment> byId = attachmentRepo.findById(newsDTO.getMainPhoto());
             if (byId.isPresent()) {
                 attachment = byId.get();
-            } else{
+            } else {
                 return ResponseEntity.notFound().build();
             }
         }
-        List<Attachment> attachments = null;
-        if(!newsDTO.getPhotos().isEmpty()){
+        List<Attachment> attachments = new ArrayList<>();
+        if (newsDTO.getPhotos().size() != 0) {
             for (UUID photoId : newsDTO.getPhotos()) {
                 Optional<Attachment> byId = attachmentRepo.findById(photoId);
-                byId.ifPresent(value -> attachments.add(value));
-
+                attachments.add(byId.get());
             }
         }
-        News newsEntity = new News(newsDTO.getTitleUz(),newsDTO.getTitleRu(), newsDTO.getDescriptionUz(), newsDTO.getDescriptionRu(), newsDTO.getLink(), attachment,attachments);
+        News newsEntity = new News(newsDTO.getTitleUz(), newsDTO.getTitleRu(), newsDTO.getDescriptionUz(), newsDTO.getDescriptionRu(), newsDTO.getLink(), attachment, attachments);
         newsRepo.save(newsEntity);
         return ResponseEntity.ok(newsEntity);
     }
 
 
     @DeleteMapping("/{id}")
-    public HttpEntity<?> deleteNews(@PathVariable Integer id){
+    public HttpEntity<?> deleteNews(@PathVariable Integer id) {
         newsRepo.deleteById(id);
         return ResponseEntity.ok("News deleted successfully");
     }
 
 
     @GetMapping("/{id}")
-    public HttpEntity<?> getNewsById(@PathVariable Integer id){
+    public HttpEntity<?> getNewsById(@PathVariable Integer id) {
         Optional<News> newsEntity = newsRepo.findById(id);
         if (newsEntity.isPresent()) {
             return ResponseEntity.ok(newsEntity.get());
         }
         return ResponseEntity.notFound().build();
     }
-
-
-
-
-
-
-
-
-
 
 
 }
