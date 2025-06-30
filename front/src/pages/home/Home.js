@@ -128,7 +128,7 @@ function Home(props) {
                                         {news.photos && news.photos.length > 0 && (
                                             <div className="news-gallery">
                                                 <h4 className="gallery-title">{translations[language].gallery}</h4>
-                                                <div className="gallery-grid responsive">
+                                                <div className="gallery-grid1 responsive">
                                                     {news.photos.map((photo) => (
                                                         <div key={photo.id} className="gallery-item">
                                                             <img
