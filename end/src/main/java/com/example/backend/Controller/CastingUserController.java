@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,11 +69,14 @@ public class CastingUserController {
         Optional<Message> message = messageRepo.findByCastingUserId(castingUserId);
         if (message.isEmpty()){
             if (status == 1){
+
                 Message message1 = new Message(save,"\uD83D\uDFE2Siz Castingdan o'tdingiz!", price,  LocalDateTime.now(), true );
+                message1.setTelegramId(new BigInteger(save.getTelegramId()));
                 messageRepo.save(message1);
             }
             if (status == 2){
                 Message message2 = new Message(save,"⛔\uFE0F Afsuski, so‘rovingiz rad etildi! Castingdan o'ta olmadingiz.", "0",  LocalDateTime.now(), false);
+                message2.setTelegramId(new BigInteger(save.getTelegramId()));
                 messageRepo.save(message2);
             }
         }else{
