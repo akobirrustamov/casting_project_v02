@@ -102,7 +102,7 @@ function Home(props) {
 
                                     <div className="news-content">
                                         <div className="news-meta">
-                                            <span className="news-date">{formatDate(news.createdAt)}</span>
+                                            {/*<span className="news-date">{formatDate(news.createdAt)}</span>*/}
                                         </div>
 
                                         <h2 className="news-title">

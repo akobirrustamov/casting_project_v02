@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
@@ -20,6 +21,7 @@ public class Message {
     private Integer id;
     private String message;
     private String price;
+    private BigInteger telegramId;
     private LocalDateTime dateTime;
     private Boolean status;
     @OneToOne

@@ -200,32 +200,35 @@ function CastingUserDetail() {
                                 </div>
                             </div>
                         )}
+                        {
+                            casting.status===0&&
+                            <div className="action-buttons">
+                                <button
+                                    className="action-btn accept-btn"
+                                    onClick={() => setIsPriceModalOpen(true)}
+                                    disabled={loading}
+                                >
+                                    <FaCheck /> Qabul qilish
+                                </button>
 
-                        <div className="action-buttons">
-                            <button
-                                className="action-btn accept-btn"
-                                onClick={() => setIsPriceModalOpen(true)}
-                                disabled={loading}
-                            >
-                                <FaCheck /> Qabul qilish
-                            </button>
+                                <button
+                                    className="action-btn reject-btn"
+                                    onClick={handleReject}
+                                    disabled={loading}
+                                >
+                                    <FaTimes /> Rad qilish
+                                </button>
 
-                            <button
-                                className="action-btn reject-btn"
-                                onClick={handleReject}
-                                disabled={loading}
-                            >
-                                <FaTimes /> Rad qilish
-                            </button>
+                                <button
+                                    className="action-btn price-btn"
+                                    onClick={() => setIsPriceModalOpen(true)}
+                                    disabled={loading}
+                                >
+                                    <FaDollarSign /> Narx belgilash
+                                </button>
+                            </div>
 
-                            <button
-                                className="action-btn price-btn"
-                                onClick={() => setIsPriceModalOpen(true)}
-                                disabled={loading}
-                            >
-                                <FaDollarSign /> Narx belgilash
-                            </button>
-                        </div>
+                        }
                     </>
                 )}
 
