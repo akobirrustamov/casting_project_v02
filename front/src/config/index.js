@@ -1,10 +1,6 @@
 import axios from "axios";
 export let baseUrl;
-<<<<<<< HEAD
 // baseUrl ="http://localhost:8080";
-=======
-// baseUrl ="http://localhost:8082";
->>>>>>> 26e79044c8f6dca1cf9b5a050814d9d2c6763e9c
 // baseUrl ="https://qabul-new.buxpxti.uz";
 baseUrl ="";
 export default function (url, method, data, param) {
