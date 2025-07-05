@@ -19,4 +19,6 @@ public interface CastingUserRepo extends JpaRepository<CastingUser,Integer> {
 
     @Query(value = "SELECT * FROM casting_user where telegram_id=:telegramId", nativeQuery = true)
     List<CastingUser> findByTelegramId(String telegramId);
+
+    List<CastingUser> findAllByOrderByCreatedAtAsc();
 }

@@ -119,7 +119,8 @@ function Home(props) {
                                             {/*<span className="news-date">{formatDate(news.createdAt)}</span>*/}
                                         </div>
 
-                                        <h2 className="news-title">
+                                        <h2
+                                            className="news-title">
                                             {language === 'uz' ? news.titleUz : news.titleRu}
                                         </h2>
 

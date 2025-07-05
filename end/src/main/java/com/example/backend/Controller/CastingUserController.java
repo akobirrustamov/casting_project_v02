@@ -29,7 +29,7 @@ public class CastingUserController {
     private final MessageRepo messageRepo;
     @GetMapping
     public HttpEntity<?> getAllCastingUser(){
-        List<CastingUser> all = castingUserRepo.findAll();
+        List<CastingUser> all = castingUserRepo.findAllByOrderByCreatedAtAsc();
         return new ResponseEntity<>(all, HttpStatus.OK);
     }
 
