@@ -5,6 +5,8 @@ import ApiCall, { baseUrl } from '../../config/index';
 import './home.css';
 import { useParams, useNavigate } from "react-router-dom";
 import { FaArrowDown } from "react-icons/fa";
+import { Modal } from 'react-responsive-modal';
+import 'react-responsive-modal/styles.css';
 
 function Home(props) {
     const { userId } = useParams();
@@ -15,6 +17,18 @@ function Home(props) {
     const [language, setLanguage] = useState('uz');
     const [visibleItems, setVisibleItems] = useState(4);
     const [isMobile, setIsMobile] = useState(false);
+    const [openModal, setOpenModal] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
+
+    const handleOpenModal = (imgUrl) => {
+        setSelectedImage(imgUrl);
+        setOpenModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setOpenModal(false);
+        setSelectedImage(null);
+    };
 
     useEffect(() => {
         const savedLanguage = localStorage.getItem('selectedLanguage') || 'uz';
@@ -136,7 +150,10 @@ function Home(props) {
                                                                 alt={translations[language].gallery}
                                                                 className="gallery-image"
                                                                 loading="lazy"
+                                                                onClick={() => handleOpenModal(`${baseUrl}/api/v1/file/getFile/${photo.id}`)}
+                                                                style={{ cursor: "pointer" }}
                                                             />
+
                                                         </div>
                                                     ))}
                                                 </div>
@@ -166,6 +183,18 @@ function Home(props) {
             >
                 <FaArrowDown className="animate-bounce text-white text-3xl" /> {/* Kattaroq icon */}
             </button>
+
+            <Modal open={openModal} onClose={handleCloseModal} center>
+                {selectedImage && (
+                    <img
+                        src={selectedImage}
+                        alt="Selected"
+                        style={{ width: "100%", height: "auto", maxHeight: "90vh", objectFit: "contain" }}
+                    />
+                )}
+            </Modal>
+
+
         </div>
     );
 }

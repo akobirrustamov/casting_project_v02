@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import logo from "./logo.jpg";
 import './header.css';
+import { FaInstagram, FaTelegramPlane } from 'react-icons/fa';
 
 function Header({ activeTab }) {
     const { userId } = useParams();
@@ -80,7 +81,26 @@ function Header({ activeTab }) {
                     </Link>
 
                     <div className="header-right">
-
+                        {!isMobile && (
+                            <div className="social-icons">
+                                <a
+                                    href="https://www.instagram.com/uzcasting?igsh=c2M2ZHVoMWI1YzVi"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="Instagram"
+                                >
+                                    <FaInstagram className="social-icon" />
+                                </a>
+                                <a
+                                    href="https://t.me/Uzcastinguz"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="Telegram"
+                                >
+                                    <FaTelegramPlane className="social-icon" />
+                                </a>
+                            </div>
+                        )}
 
                         {isMobile && (
                             <div className='for_flex'>
@@ -184,6 +204,28 @@ function Header({ activeTab }) {
                                 >
                                     {translations[language].my}
                                 </Link>
+                            </li>
+                            <li className="nav-item social-icons-mobile">
+                                <a
+                                    href="https://www.instagram.com/uzcasting?igsh=c2M2ZHVoMWI1YzVi"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="Instagram"
+                                    onClick={closeMenu}
+                                >
+                                    <FaInstagram className="social-icon" />
+                                    <span>Instagram</span>
+                                </a>
+                                <a
+                                    href="https://t.me/Uzcastinguz"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="Telegram"
+                                    onClick={closeMenu}
+                                >
+                                    <FaTelegramPlane className="social-icon" />
+                                    <span>Telegram</span>
+                                </a>
                             </li>
                         </ul>
                     </nav>
