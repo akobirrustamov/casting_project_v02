@@ -63,7 +63,9 @@ function DataForm() {
             price: "Kutilayotgan narx ($)",
             uploadPhotos: "Rasmlar yuklash (bir nechta rasm yuklash mumkin)",
             photoHint: "Iltimos, yuzingiz va butun tanaingiz ko'rinadigan aniq rasmlarni yuklang(6 tadan kam bo'lmasin)",
-            remove: "×"
+            remove: "×",
+            loading: "Ma'lumotlar yuklanmoqda...",
+            uploadingPhotos: "Rasmlar yuklanmoqda..."
         },
         ru: {
             formTitle: "Форма регистрации на кастинг",
@@ -109,7 +111,9 @@ function DataForm() {
             price: "Ожидаемая цена ($)",
             uploadPhotos: "Загрузить фотографии (можно несколько)",
             photoHint: "Пожалуйста, загрузите чёткие фотографии, на которых видно ваше лицо и всё тело (не менее 6 штук)",
-            remove: "×"
+            remove: "×",
+            loading: "Данные загружаются...",
+            uploadingPhotos: "Фотографии загружаются..."
         }
     };
 
@@ -166,29 +170,67 @@ function DataForm() {
         }));
     };
 
-    const handleImageUpload = async (e) => {
-        const files = Array.from(e.target.files);
-        const previews = files.map(file => URL.createObjectURL(file));
-        setImagePreviews(prev => [...prev, ...previews]);
+    const [currentFileInput, setCurrentFileInput] = useState(0);
+    const MAX_PHOTOS = 6;
 
-        const uploadedIds = [];
-        for (const file of files) {
-            try {
-                const uploadData = new FormData();
-                uploadData.append('photo', file);
-                uploadData.append('prefix', '/users/' + userId);
-                const response = await ApiCall('/api/v1/file/upload', 'POST', uploadData, null, true);
-                uploadedIds.push(response.data);
-            } catch (error) {
-                console.error("Image upload error:", error);
-                setError("Rasmlarni yuklashda xatolik yuz berdi");
+    const [uploadProgress, setUploadProgress] = useState({
+        isUploading: false,
+        message: '',
+        progress: 0
+    });
+
+    const handleImageUpload = async (e, index) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setUploadProgress({
+            isUploading: true,
+            message: translations[language].uploadingPhotos,
+            progress: 0
+        });
+
+        // Create preview
+        const preview = URL.createObjectURL(file);
+        const newPreviews = [...imagePreviews];
+        newPreviews[index] = preview;
+        setImagePreviews(newPreviews);
+
+        try {
+            // Upload to backend
+            const uploadData = new FormData();
+            uploadData.append('photo', file);
+            uploadData.append('prefix', '/users/' + userId);
+
+            const response = await ApiCall('/api/v1/file/upload', 'POST', uploadData, null, true, (progressEvent) => {
+                const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                setUploadProgress(prev => ({
+                    ...prev,
+                    progress
+                }));
+            });
+
+            // Update photos array
+            const newPhotos = [...formData.photos];
+            newPhotos[index] = response.data;
+            setFormData(prev => ({
+                ...prev,
+                photos: newPhotos
+            }));
+
+            // Move to next input if not last
+            if (currentFileInput < MAX_PHOTOS - 1) {
+                setCurrentFileInput(currentFileInput + 1);
             }
+        } catch (error) {
+            console.error("Image upload error:", error);
+            setError("Rasmlarni yuklashda xatolik yuz berdi");
+        } finally {
+            setUploadProgress({
+                isUploading: false,
+                message: '',
+                progress: 0
+            });
         }
-
-        setFormData(prev => ({
-            ...prev,
-            photos: [...prev.photos, ...uploadedIds]
-        }));
     };
 
     const removeImage = (index) => {
@@ -202,16 +244,68 @@ function DataForm() {
             ...prev,
             photos: newPhotos
         }));
+
+        // Adjust current file input if needed
+        if (index <= currentFileInput) {
+            setCurrentFileInput(Math.max(0, currentFileInput - 1));
+        }
     };
+    // const handleImageUpload = async (e) => {
+    //     const files = Array.from(e.target.files);
+    //     const previews = files.map(file => URL.createObjectURL(file));
+    //     setImagePreviews(prev => [...prev, ...previews]);
+    //
+    //     const uploadedIds = [];
+    //     for (const file of files) {
+    //         try {
+    //             const uploadData = new FormData();
+    //             uploadData.append('photo', file);
+    //             uploadData.append('prefix', '/users/' + userId);
+    //             const response = await ApiCall('/api/v1/file/upload', 'POST', uploadData, null, true);
+    //             uploadedIds.push(response.data);
+    //         } catch (error) {
+    //             console.error("Image upload error:", error);
+    //             setError("Rasmlarni yuklashda xatolik yuz berdi");
+    //         }
+    //     }
+    //
+    //     setFormData(prev => ({
+    //         ...prev,
+    //         photos: [...prev.photos, ...uploadedIds]
+    //     }));
+    // };
+
+    // const removeImage = (index) => {
+    //     const newPreviews = [...imagePreviews];
+    //     newPreviews.splice(index, 1);
+    //     setImagePreviews(newPreviews);
+    //
+    //     const newPhotos = [...formData.photos];
+    //     newPhotos.splice(index, 1);
+    //     setFormData(prev => ({
+    //         ...prev,
+    //         photos: newPhotos
+    //     }));
+    // };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
+        setUploadProgress({
+            isUploading: true,
+            message: translations[language].loading,
+            progress: 0
+        });
 
         if (formData.photos.length < 6) {
             setError("Kamida 6 ta rasm yuklashingiz shart!");
             setLoading(false);
+            setUploadProgress({
+                isUploading: false,
+                message: '',
+                progress: 0
+            });
             return;
         }
 
@@ -226,7 +320,7 @@ function DataForm() {
                 createdAt: new Date().toISOString()
             };
 
-            const response = await ApiCall('/api/v1/casting-user', 'POST', payload);
+            const response = await ApiCall('/api/v1/casting-user', 'POST', payload, null, true);
 
             if (response.error) {
                 setError(response.data?.message || "Formani yuborishda xatolik");
@@ -241,11 +335,38 @@ function DataForm() {
             setError("Formani yuborishda xatolik yuz berdi");
         } finally {
             setLoading(false);
+            setUploadProgress({
+                isUploading: false,
+                message: '',
+                progress: 0
+            });
         }
     };
 
     return (
         <div className={"history-container"}>
+
+
+            {(uploadProgress.isUploading || loading) && (
+                <div className="full-page-loading">
+                    <div className="loading-content">
+                        <div className="loading-spinner"></div>
+                        <p>{uploadProgress.message}</p>
+                        {uploadProgress.progress > 0 && (
+                            <div className="progress-bar">
+                                <div
+                                    className="progress-fill"
+                                    style={{ width: `${uploadProgress.progress}%` }}
+                                ></div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+
+
+
             <Header props={"data-form"} />
             <div className="data-form-container">
 
@@ -526,33 +647,44 @@ function DataForm() {
                         <h2>{translations[language].photos}</h2>
                         <div className="form-group">
                             <label>{translations[language].uploadPhotos}*</label>
-                            <input
-                                type="file"
-                                onChange={handleImageUpload}
-                                accept="image/*"
-                                multiple
-                                required={formData.photos.length === 0}
-                            />
                             <p className="hint">{translations[language].photoHint}</p>
-                        </div>
 
-                        {imagePreviews.length > 0 && (
-                            <div className="image-previews">
-                                {imagePreviews.map((preview, index) => (
-                                    <div key={index} className="image-preview">
-                                        <img src={preview} alt={`Preview ${index}`} />
-                                        <button
-                                            type="button"
-                                            onClick={() => removeImage(index)}
-                                            className="remove-image"
-                                        >
-                                            {translations[language].remove}
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                            {/* Render file inputs dynamically */}
+                            {Array.from({ length: MAX_PHOTOS }).map((_, index) => (
+                                <div key={index} className={`file-input-wrapper ${index === currentFileInput ? 'active' : ''}`}>
+                                    <label className="file-input-label">
+                                        {imagePreviews[index] ? (
+                                            <div className="image-preview">
+                                                <img src={imagePreviews[index]} alt={`Preview ${index}`} />
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        removeImage(index);
+                                                    }}
+                                                    className="remove-image"
+                                                >
+                                                    {translations[language].remove}
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="file-input-placeholder">
+                                                {translations[language].uploadPhotos} {index + 1}
+                                            </div>
+                                        )}
+                                        <input
+                                            type="file"
+                                            onChange={(e) => handleImageUpload(e, index)}
+                                            accept="image/*"
+                                            style={{ display: 'none' }}
+                                            disabled={index !== currentFileInput}
+                                        />
+                                    </label>
+                                </div>
+                            ))}
+                        </div>
                     </div>
+
                     <div className="form-actions">
                         <button
                             type="submit"

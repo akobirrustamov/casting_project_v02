@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import ApiCall from "../../config";
+import ApiCall, {baseUrl} from "../../config";
 import { useNavigate } from "react-router-dom";
 import Header from "./Header";
-import { FaPlus, FaTrash, FaTimes, FaSpinner } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaTimes, FaSpinner, FaEdit } from 'react-icons/fa';
 import './AdminNews.css';
 
 const AdminNews = () => {
@@ -12,6 +12,7 @@ const AdminNews = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [currentNews, setCurrentNews] = useState(null);
+    const [mode, setMode] = useState('create'); // 'create' or 'edit'
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
@@ -23,7 +24,9 @@ const AdminNews = () => {
         mainImage: null,
         additionalImages: [],
         mainPhotoPreview: null,
-        additionalImagesPreviews: []
+        additionalImagesPreviews: [],
+        existingMainPhoto: null,
+        existingAdditionalPhotos: []
     });
 
     useEffect(() => {
@@ -75,7 +78,8 @@ const AdminNews = () => {
             setFormData(prev => ({
                 ...prev,
                 mainImage: file,
-                mainPhotoPreview: URL.createObjectURL(file)
+                mainPhotoPreview: URL.createObjectURL(file),
+                existingMainPhoto: null // Clear existing photo when new one is selected
             }));
         }
     };
@@ -95,14 +99,22 @@ const AdminNews = () => {
     const removeAdditionalImage = (index) => {
         const newImages = [...formData.additionalImages];
         const newPreviews = [...formData.additionalImagesPreviews];
+        const newExisting = [...formData.existingAdditionalPhotos];
 
-        newImages.splice(index, 1);
-        newPreviews.splice(index, 1);
+        // Check if we're removing an existing image or a newly added one
+        if (index < newExisting.length) {
+            newExisting.splice(index, 1);
+        } else {
+            const adjustedIndex = index - newExisting.length;
+            newImages.splice(adjustedIndex, 1);
+            newPreviews.splice(adjustedIndex, 1);
+        }
 
         setFormData(prev => ({
             ...prev,
             additionalImages: newImages,
-            additionalImagesPreviews: newPreviews
+            additionalImagesPreviews: newPreviews,
+            existingAdditionalPhotos: newExisting
         }));
     };
 
@@ -116,13 +128,40 @@ const AdminNews = () => {
             mainImage: null,
             additionalImages: [],
             mainPhotoPreview: null,
-            additionalImagesPreviews: []
+            additionalImagesPreviews: [],
+            existingMainPhoto: null,
+            existingAdditionalPhotos: []
         });
         setCurrentNews(null);
+        setMode('create');
     };
 
     const openCreateModal = () => {
         resetForm();
+        setMode('create');
+        setModalVisible(true);
+    };
+
+
+
+    const openEditModal = (news) => {
+        setCurrentNews(news);
+        setMode('edit');
+        setFormData({
+            titleUz: news.titleUz,
+            titleRu: news.titleRu,
+            descriptionUz: news.descriptionUz,
+            descriptionRu: news.descriptionRu,
+            link: news.link || '',
+            mainImage: null,
+            additionalImages: [],
+            mainPhotoPreview: news.mainPhoto ? `${baseUrl}/api/v1/file/getFile/${news.mainPhoto.id}` : null,
+            additionalImagesPreviews: news.photos?.map(photo =>
+                `${baseUrl}/api/v1/file/getFile/${photo.id}`
+            ) || [],
+            existingMainPhoto: news.mainPhoto,
+            existingAdditionalPhotos: news.photos || []
+        });
         setModalVisible(true);
     };
 
@@ -142,13 +181,15 @@ const AdminNews = () => {
         setLoading(true);
 
         try {
-            let mainPhotoUuid = null;
-            const additionalImagesUuids = [];
+            let mainPhotoUuid = formData.existingMainPhoto?.id || null;
+            const additionalImagesUuids = [...formData.existingAdditionalPhotos.map(p => p.id)];
 
+            // Upload new main image if selected
             if (formData.mainImage) {
                 mainPhotoUuid = await uploadImage(formData.mainImage, '/main');
             }
 
+            // Upload new additional images
             for (const image of formData.additionalImages) {
                 const uuid = await uploadImage(image, '/additional');
                 additionalImagesUuids.push(uuid);
@@ -163,7 +204,14 @@ const AdminNews = () => {
                 mainPhoto: mainPhotoUuid,
                 photos: additionalImagesUuids
             };
-            const response = await ApiCall('/api/v1/news', 'POST', newsData, null, true);
+
+            let response;
+            if (mode === 'create') {
+                response = await ApiCall('/api/v1/news', 'POST', newsData, null, true);
+            } else {
+                response = await ApiCall(`/api/v1/news/${currentNews.id}`, 'PUT', newsData, null, true);
+            }
+
             if (response.error) {
                 setError(response.data);
             } else {
@@ -172,7 +220,7 @@ const AdminNews = () => {
             }
         } catch (error) {
             console.error("Yangilikni saqlashda xatolik:", error);
-            setError("Yangilikni saqlab bo'lmadi");
+            setError(mode === 'create' ? "Yangilikni saqlab bo'lmadi" : "Yangilikni yangilab bo'lmadi");
         } finally {
             setLoading(false);
         }
@@ -235,6 +283,12 @@ const AdminNews = () => {
                             </div>
                             <div className="news-card-actions">
                                 <button
+                                    onClick={() => openEditModal(news)}
+                                    className="edit-btn"
+                                >
+                                    <FaEdit /> Tahrirlash
+                                </button>
+                                <button
                                     onClick={() => openDeleteModal(news)}
                                     className="delete-btn"
                                 >
@@ -246,12 +300,14 @@ const AdminNews = () => {
                 </div>
             )}
 
-            {/* Yangi qo'shish modali */}
+            {/* Yangilik qo'shish/tahrirlash modali */}
             {modalVisible && (
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h2 className="modal-title">Yangi Yangilik</h2>
+                            <h2 className="modal-title">
+                                {mode === 'create' ? 'Yangi Yangilik' : 'Yangilikni Tahrirlash'}
+                            </h2>
                             <button onClick={closeModal} className="close-btn">
                                 <FaTimes />
                             </button>
@@ -265,6 +321,7 @@ const AdminNews = () => {
                                     value={formData.titleUz}
                                     onChange={handleInputChange}
                                     className="form-input"
+                                    required
                                 />
                             </div>
 
@@ -276,6 +333,7 @@ const AdminNews = () => {
                                     value={formData.titleRu}
                                     onChange={handleInputChange}
                                     className="form-input"
+                                    required
                                 />
                             </div>
 
@@ -288,6 +346,7 @@ const AdminNews = () => {
                                     className="form-input form-textarea"
                                     placeholder="Yangilik tavsifini kiriting..."
                                     rows={5}
+                                    required
                                 ></textarea>
                             </div>
 
@@ -300,6 +359,7 @@ const AdminNews = () => {
                                     className="form-input form-textarea"
                                     placeholder="Описание новости..."
                                     rows={5}
+                                    required
                                 ></textarea>
                             </div>
 
@@ -318,7 +378,7 @@ const AdminNews = () => {
                             <div className="form-group">
                                 <label className="form-label">Asosiy Rasm</label>
                                 <label className="file-input-label">
-                                    Rasm tanlang
+                                    {formData.mainPhotoPreview ? "Rasmni almashtirish" : "Rasm tanlang"}
                                     <input
                                         type="file"
                                         onChange={handleMainImageChange}
@@ -333,6 +393,9 @@ const AdminNews = () => {
                                                 src={formData.mainPhotoPreview}
                                                 alt="Asosiy rasm"
                                                 className="preview-image"
+                                                onError={(e) => {
+                                                    e.target.src = 'path/to/default/image.jpg'; // Add fallback image
+                                                }}
                                             />
                                         </div>
                                     </div>
@@ -358,6 +421,9 @@ const AdminNews = () => {
                                                 src={preview}
                                                 alt={`Qo'shimcha ${index + 1}`}
                                                 className="preview-image"
+                                                onError={(e) => {
+                                                    e.target.src = 'path/to/default/image.jpg'; // Add fallback image
+                                                }}
                                             />
                                             <button
                                                 type="button"
@@ -384,11 +450,11 @@ const AdminNews = () => {
                                     className="submit-btn"
                                     disabled={loading}
                                 >
-                                    {loading ? <FaSpinner className="animate-spin" /> : "Saqlash"}
+                                    {loading ? <FaSpinner className="animate-spin" /> :
+                                        (mode === 'create' ? "Saqlash" : "Yangilash")}
                                 </button>
                             </div>
                         </form>
-
                     </div>
                 </div>
             )}
@@ -399,7 +465,7 @@ const AdminNews = () => {
                     <div className="delete-modal-content">
                         <h2 className="modal-title">O'chirishni Tasdiqlang</h2>
                         <p className="delete-modal-text">
-                            Ushbu yangilikni rostdan ham o'chirmoqchimisiz?
+                            "{currentNews?.titleUz}" yangilikni rostdan ham o'chirmoqchimisiz?
                         </p>
                         <div className="delete-modal-actions">
                             <button
