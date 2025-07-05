@@ -16,7 +16,83 @@ dist/
 .cache/
 .next/
 *.log
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
+# --- Python / Aiogram Backend ---
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# PyInstaller
+*.spec
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Logging and debug files
+*.log
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# PyCharm IDE
+.idea/
+
+# VS Code
+.vscode/
+
+# dotenv environment files
+.env
+.env.*
+
+# Local SQLite or debug DBs
+*.sqlite3
+*.db
+
+# System files
+Thumbs.db
+ehthumbs.db
 ### Java (Spring Boot Backend)
 target/
 *.class
